@@ -1,0 +1,5 @@
+numpy==1.16.6
+opencv-python==4.2.0.32
+Pillow==6.2.2
+pywin32==228
+vboxapi==1.0
