@@ -29,7 +29,7 @@ class CVertex(object):
 	def __init__(self, vPos=None, vNorm=None, vTexCoord=None, fRwh=None):
 		self.m_vPos = vector([0.0, 0.0, 0.0]) if vPos is None else vPos  # 位置
 		self.m_vNorm = vector([0.0, 0.0, 0.0]) if vNorm is None else vNorm  # 法线
-		self.m_vTexCoord = vector([0.0, 0.0, 0.0]) if vTexCoord is None else vTexCoord  # 纹理坐标
+		self.m_vTexCoord = vector([0.0, 0.0]) if vTexCoord is None else vTexCoord  # 纹理坐标
 		self.m_fRwh = vector([0.0, 0.0, 0.0]) if fRwh is None else fRwh  # 1 / w
 
 	def copy(self):
