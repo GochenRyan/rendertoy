@@ -2,6 +2,7 @@ import pyglet
 from pyglet import image
 from defines import *
 from geometry import *
+import device
 
 """
 3D流水线：物体->多边形->顶点->变换->光栅化->屏幕
@@ -18,6 +19,9 @@ from geometry import *
 1. 左手系，观察空间右手系(与Unity相同)
 2. 右乘、列矩阵
 """
+
+I_WINDOW_WIDTH = 800
+I_WINDOW_HEIGHT = 600
 
 
 if __name__ == '__main__':
@@ -100,6 +104,8 @@ if __name__ == '__main__':
 		for j in [x * 2 for x in range(4)]:
 			aTexture[i * grid_size: (i + 1) * grid_size, (j + i % 2) * grid_size: (j + i % 2 + 1) * grid_size, :] = vector([1, 128, 255, 255])
 
+	oDevice = device.CDevice(I_WINDOW_WIDTH, I_WINDOW_HEIGHT)
+
 	@game_window.event
 	def on_draw():
 		"""
@@ -108,6 +114,9 @@ if __name__ == '__main__':
 		print("-----ondraw")
 
 		#todo: 清理帧缓冲、Z缓冲
+		oDevice.ClearFrameBuffer(vector([128, 33, 78, 255]))
+		oDevice.ClearZBuffer()
+
 
 		#todo: mvp变换
 
