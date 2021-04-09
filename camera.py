@@ -11,10 +11,10 @@ class CUVNCamera(object):
 		self.m_vAt = vAt  # 注视目标的位置
 		self.m_vUp = vUp  # 上向量
 		self.m_mViewTrans = None
-		self.m_fFov = fFov
+		self.m_fFov = fFov  # 竖直方向的张开角度
 		self.m_fAspect = fAspect
-		self.m_fNear = fNear
-		self.m_fFar = fFar
+		self.m_fNear = fNear  # 近裁剪平面
+		self.m_fFar = fFar  # 远裁剪平面
 		self.m_mPerspTrans = None
 
 	def GetViewTrans(self):
@@ -22,21 +22,23 @@ class CUVNCamera(object):
 		return self.m_mViewTrans
 
 	def calViewTrans(self):
-		# 观察空间为右手系，这里算出U、N、V轴在世界空间的表示
+		# 观察空间为右手系，这里算出U、N、V轴在世界空间的表示，叉乘顺序为UxV,VxN,NxU
+		# 摄像机指向-N方向
+		# 过程：1.平移  2.空间变换
 		vN = rtmath.normalize(self.m_vEye - self.m_vAt)[:3]
-		vU = -rtmath.normalize(np.cross(self.m_vUp[:3], vN))
-		vV = rtmath.normalize(np.cross(vU, vN))
+		vU = rtmath.normalize(-np.cross(self.m_vUp[:3], vN))
+		vV = rtmath.normalize(-np.cross(vN, vU))
+
+		print(vU, vV, vN)
+		print(np.cross(vector([1,0,0]), vector([0,1,0])))
 
 		mTemp = np.eye(4)
 		mTemp[0, :3] = vU
-		print("vU:", vU)
 		mTemp[1, :3] = vV
-		print("vV:", vV)
 		mTemp[2, :3] = vN
-		print("vN:", vN)
-		mTemp[3, 0] = -np.dot(vU, self.m_vEye[:3])
-		mTemp[3, 1] = -np.dot(vV, self.m_vEye[:3])
-		mTemp[3, 2] = -np.dot(vN, self.m_vEye[:3])
+		mTemp[0, 3] = -np.dot(self.m_vEye[:3], vU)
+		mTemp[1, 3] = -np.dot(self.m_vEye[:3], vV)
+		mTemp[2, 3] = -np.dot(self.m_vEye[:3], vN)
 		self.m_mViewTrans = mTemp
 
 	def GetProjectTrans(self):
