@@ -28,10 +28,6 @@ class CUVNCamera(object):
 		vN = rtmath.normalize(self.m_vEye - self.m_vAt)[:3]
 		vU = rtmath.normalize(-np.cross(self.m_vUp[:3], vN))
 		vV = rtmath.normalize(-np.cross(vN, vU))
-
-		print(vU, vV, vN)
-		print(np.cross(vector([1,0,0]), vector([0,1,0])))
-
 		mTemp = np.eye(4)
 		mTemp[0, :3] = vU
 		mTemp[1, :3] = vV
@@ -46,7 +42,15 @@ class CUVNCamera(object):
 		return self.m_mPerspTrans
 
 	def calProjectTrans(self):
-		pass
+		cot = 1. / np.tan(self.m_fFov / 2.)
+		zRange = self.m_fFar - self.m_fNear
+		mTemp = np.zeros((4, 4))
+		mTemp[0, 0] = cot / self.m_fAspect
+		mTemp[1, 1] = cot
+		mTemp[2, 2] = (self.m_fNear + self.m_fFar) / zRange  # 取反
+		mTemp[2, 3] = - 2 * self.m_fFar * self.m_fNear / zRange  # 取反
+		mTemp[3, 2] = 1
+		self.m_mPerspTrans = mTemp
 
 	def SetPos(self, vAt):
 		self.m_vAt = vAt
