@@ -22,9 +22,11 @@ class CUVNCamera(object):
 		return self.m_mViewTrans
 
 	def calViewTrans(self):
-		# 观察空间为右手系，这里算出U、N、V轴在世界空间的表示，叉乘顺序为UxV,VxN,NxU
-		# 摄像机指向-N方向
-		# 过程：1.平移  2.空间变换
+		"""
+		观察空间为右手系，这里算出U、N、V轴在世界空间的表示，叉乘顺序为UxV,VxN,NxU
+		摄像机指向-N方向
+		过程：1.平移  2.空间变换
+		"""
 		vN = rtmath.normalize(self.m_vEye - self.m_vAt)[:3]
 		vU = rtmath.normalize(-np.cross(self.m_vUp[:3], vN))
 		vV = rtmath.normalize(-np.cross(vN, vU))
@@ -42,14 +44,18 @@ class CUVNCamera(object):
 		return self.m_mPerspTrans
 
 	def calProjectTrans(self):
+		"""
+		需要考虑Z分量需要取反
+		:return:
+		"""
 		cot = 1. / np.tan(self.m_fFov / 2.)
 		zRange = self.m_fFar - self.m_fNear
 		mTemp = np.zeros((4, 4))
 		mTemp[0, 0] = cot / self.m_fAspect
 		mTemp[1, 1] = cot
 		mTemp[2, 2] = (self.m_fNear + self.m_fFar) / zRange  # 取反
-		mTemp[2, 3] = - 2 * self.m_fFar * self.m_fNear / zRange  # 取反
-		mTemp[3, 2] = 1
+		mTemp[2, 3] = 2 * self.m_fFar * self.m_fNear / zRange
+		mTemp[3, 2] = 1  # 取反
 		self.m_mPerspTrans = mTemp
 
 	def SetPos(self, vAt):
