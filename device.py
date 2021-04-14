@@ -14,3 +14,6 @@ class CDevice(object):
 
 	def ClearZBuffer(self):
 		self.m_aZBuffer[...] = 0
+
+	def DrawMesh(self, lVertex, lIndice):
+		pass

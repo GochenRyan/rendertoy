@@ -3,6 +3,7 @@ from pyglet import image
 from defines import *
 from geometry import *
 import device
+import camera
 
 """
 3D流水线：物体->多边形->顶点->变换->光栅化->屏幕
@@ -105,6 +106,9 @@ if __name__ == '__main__':
 			aTexture[i * grid_size: (i + 1) * grid_size, (j + i % 2) * grid_size: (j + i % 2 + 1) * grid_size, :] = vector([1, 128, 255, 255])
 
 	oDevice = device.CDevice(I_WINDOW_WIDTH, I_WINDOW_HEIGHT)
+	oCamera = camera.CUVNCamera()
+	mMVP = oCamera.GetViewTrans() * oCamera.GetProjectTrans()
+
 
 	@game_window.event
 	def on_draw():
@@ -116,7 +120,6 @@ if __name__ == '__main__':
 		#todo: 清理帧缓冲、Z缓冲
 		oDevice.ClearFrameBuffer(vector([128, 33, 78, 255]))
 		oDevice.ClearZBuffer()
-
 
 		#todo: mvp变换
 
