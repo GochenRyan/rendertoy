@@ -106,9 +106,10 @@ if __name__ == '__main__':
 			aTexture[i * grid_size: (i + 1) * grid_size, (j + i % 2) * grid_size: (j + i % 2 + 1) * grid_size, :] = vector([1, 128, 255, 255])
 
 	oDevice = device.CDevice(I_WINDOW_WIDTH, I_WINDOW_HEIGHT)
-	oCamera = camera.CUVNCamera()
+	oCameraMgr = camera.CMgr()
+	oCamera = oCameraMgr.GetCamera(camera.I_TYPE_NORMAL)
 	mMVP = oCamera.GetViewTrans() * oCamera.GetProjectTrans()
-
+	mNormalTrans = oCamera.GetNormalTrans()
 
 	@game_window.event
 	def on_draw():

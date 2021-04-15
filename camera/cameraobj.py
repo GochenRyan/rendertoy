@@ -1,10 +1,12 @@
-import numpy as np
-import rtmath
-
-from geometry import vector
 """
 相机空间：右手系
 """
+import numpy as np
+import rtmath
+from geometry import vector
+
+I_TYPE_NORMAL = 1
+
 class CUVNCamera(object):
 	def __init__(self, vEye=vector([0, 0, -3, 1]), vAt=vector([0.23, 0, 0, 1]), vUp=vector([0, 1, 0, 0]), fFov=0.5*np.pi, fAspect=1.0, fNear=1.0, fFar=500.0):
 		self.m_vEye = vEye  # 相机的位置
@@ -16,6 +18,15 @@ class CUVNCamera(object):
 		self.m_fNear = fNear  # 近裁剪平面
 		self.m_fFar = fFar  # 远裁剪平面
 		self.m_mPerspTrans = None
+		self.m_mNormalTrans = None
+
+	def GetNormalTrans(self):
+		self.calNormalTrans()
+		return self.m_mNormalTrans
+
+	def calNormalTrans(self):
+		self.calViewTrans()
+		return np.linalg.inv(self.m_mViewTrans).T
 
 	def GetViewTrans(self):
 		self.calViewTrans()
