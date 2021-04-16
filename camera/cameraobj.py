@@ -26,7 +26,7 @@ class CUVNCamera(object):
 
 	def calNormalTrans(self):
 		self.calViewTrans()
-		return np.linalg.inv(self.m_mViewTrans).T
+		return np.linalg.inv(self.m_mViewTrans[:3, :3]).T
 
 	def GetViewTrans(self):
 		self.calViewTrans()

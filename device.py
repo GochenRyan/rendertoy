@@ -20,7 +20,38 @@ class CDevice(object):
 			self.drawPrimitive(lVertex[tIndices[0]], lVertex[tIndices[1]], lVertex[tIndices[0]])
 
 	def drawPrimitive(self, vVertex1, vVertex2, vVertex3):
-		pass
+		"""
+		绘制图元：，法线变换，背面剔除，光栅化
+		"""
+		import camera
+		oCameraMgr = camera.CMgr()
+		oCamera = oCameraMgr.GetCamera(camera.I_TYPE_NORMAL)
+		mMVP = oCamera.GetViewTrans() * oCamera.GetProjectTrans()
+		mNormalTrans = oCamera.GetNormalTrans()
+
+		vPoint1 = vVertex1.copy()
+		vPoint2 = vVertex2.copy()
+		vPoint3 = vVertex3.copy()
+
+		# MVP变换
+		vPoint1.m_vPos *= mMVP
+		vPoint2.m_vPos *= mMVP
+		vPoint3.m_vPos *= mMVP
+
+		if self.isBackface(vPoint1.m_vPos, vPoint2.m_vPos, vPoint3.m_vPos):
+			return
+
+		vPoint1.m_vNorm *= mNormalTrans
+		vPoint2.m_vNorm *= mNormalTrans
+		vPoint3.m_vNorm *= mNormalTrans
+
+		vPoint1.m_vPos = self.homogenize(vPoint1.m_vPos)
+		vPoint2.m_vPos = self.homogenize(vPoint2.m_vPos)
+		vPoint3.m_vPos = self.homogenize(vPoint3.m_vPos)
+
+		tTrapezoids = self.trapezoidTriangle(vPoint1, vPoint2, vPoint3)
+		for tTrap in tTrapezoids:
+			self.drawScanline(tTrap)
 
 	def isBackface(self, vPos1, vPos2, vPos3):
 		"""
@@ -42,6 +73,7 @@ class CDevice(object):
 		vPos[3] = w
 
 	def trapezoidTriangle(self, vVertex1, vVertex2, vVertex3):
+		"""切分三角形"""
 		pass
 
 	def drawScanline(self, tTrapezoid):
