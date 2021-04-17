@@ -3,6 +3,8 @@ from geometry import *
 
 class CDevice(object):
 	def __init__(self, iWidth, iHeight):
+		self.m_iWidth = iWidth
+		self.m_iHeight = iHeight
 		self.m_aFrameBuffer = np.zeros((iHeight, iWidth, 4), dtype='uint8') * 255  # 帧缓冲
 		self.m_aZBuffer = np.zeros((iHeight, iWidth),  dtype='float')  # z缓冲
 
@@ -41,17 +43,37 @@ class CDevice(object):
 		if self.isBackface(vPoint1.m_vPos, vPoint2.m_vPos, vPoint3.m_vPos):
 			return
 
+		# 法线变换
 		vPoint1.m_vNorm *= mNormalTrans
 		vPoint2.m_vNorm *= mNormalTrans
 		vPoint3.m_vNorm *= mNormalTrans
 
-		vPoint1.m_vPos = self.homogenize(vPoint1.m_vPos)
-		vPoint2.m_vPos = self.homogenize(vPoint2.m_vPos)
-		vPoint3.m_vPos = self.homogenize(vPoint3.m_vPos)
+		# 归一化
+		self.homogenize(vPoint1.m_vPos)
+		self.homogenize(vPoint2.m_vPos)
+		self.homogenize(vPoint3.m_vPos)
 
+		# rhw
+		self.initRhw(vPoint1)
+		self.initRhw(vPoint2)
+		self.initRhw(vPoint3)
+
+		# 屏幕映射
+		self.screenMapping(vPoint1.m_vPos)
+		self.screenMapping(vPoint2.m_vPos)
+		self.screenMapping(vPoint3.m_vPos)
+
+		# 梯形划分(当作梯形划分为上下两个三角形)
 		tTrapezoids = self.trapezoidTriangle(vPoint1, vPoint2, vPoint3)
 		for tTrap in tTrapezoids:
 			self.drawScanline(tTrap)
+
+	def initRhw(self, vVertex):
+		rhw = 1. / vVertex.m_vPos[3]
+
+	def screenMapping(self, vPos):
+		vPos[0] *= self.m_iWidth
+		vPos[1] *= self.m_iHeight
 
 	def isBackface(self, vPos1, vPos2, vPos3):
 		"""
@@ -74,7 +96,34 @@ class CDevice(object):
 
 	def trapezoidTriangle(self, vVertex1, vVertex2, vVertex3):
 		"""切分三角形"""
-		pass
+
+		if vVertex1.m_vPos[0] == vVertex1.m_vPos[0] == vVertex3.m_vPos[0]:
+			return []
+		if vVertex1.m_vPos[1] == vVertex1.m_vPos[1] == vVertex3.m_vPos[1]:
+			return []
+
+		# y值从高到低
+		if vVertex1.m_vPos[1] > vVertex2.m_vPos[1]:
+			vVertex1, vVertex2 = vVertex2, vVertex1
+		if vVertex1.m_vPos[1] > vVertex3.m_vPos[1]:
+			vVertex1, vVertex3 = vVertex3, vVertex1
+		if vVertex2.m_vPos[1] > vVertex3.m_vPos[1]:
+			vVertex2, vVertex3 = vVertex3, vVertex2
+
+		# 存在一边与x轴平行
+		if vVertex1.m_vPos[1] - vVertex2.m_vPos[1] < 0.5:
+			if vVertex1.m_vPos[0] > vVertex2.m_vPos[0]:
+				vVertex1, vVertex2 = vVertex2, vVertex1
+			return ((vVertex1, vVertex3), (vVertex2, vVertex3))
+
+		if vVertex2.m_vPos[1] - vVertex3.m_vPos[1] < 0.5:
+			if vVertex2.m_vPos[0] > vVertex3.m_vPos[0]:
+				vVertex2, vVertex3 = vVertex3, vVertex2
+			return ((vVertex1, vVertex2), (vVertex1, vVertex3))
+
+		# 不存在一边与x轴平行，一分为二
+
+
 
 	def drawScanline(self, tTrapezoid):
 		pass
