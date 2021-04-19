@@ -1,8 +1,9 @@
+import rtmath
 import numpy as np
 from geometry import *
 
 class CDevice(object):
-	def __init__(self, iWidth, iHeight):
+	def __init__(self, iWidth=800, iHeight=600):
 		self.m_iWidth = iWidth
 		self.m_iHeight = iHeight
 		self.m_aFrameBuffer = np.zeros((iHeight, iWidth, 4), dtype='uint8') * 255  # 帧缓冲
@@ -69,7 +70,7 @@ class CDevice(object):
 			self.drawScanline(tTrap)
 
 	def initRhw(self, vVertex):
-		rhw = 1. / vVertex.m_vPos[3]
+		vVertex.rhw = 1. / vVertex.m_vPos[3]
 
 	def screenMapping(self, vPos):
 		vPos[0] *= self.m_iWidth
@@ -96,34 +97,52 @@ class CDevice(object):
 
 	def trapezoidTriangle(self, vVertex1, vVertex2, vVertex3):
 		"""切分三角形"""
-
 		if vVertex1.m_vPos[0] == vVertex1.m_vPos[0] == vVertex3.m_vPos[0]:
 			return []
 		if vVertex1.m_vPos[1] == vVertex1.m_vPos[1] == vVertex3.m_vPos[1]:
 			return []
 
 		# y值从高到低
-		if vVertex1.m_vPos[1] > vVertex2.m_vPos[1]:
+		if vVertex1.m_vPos[1] < vVertex2.m_vPos[1]:
 			vVertex1, vVertex2 = vVertex2, vVertex1
-		if vVertex1.m_vPos[1] > vVertex3.m_vPos[1]:
+		if vVertex1.m_vPos[1] < vVertex3.m_vPos[1]:
 			vVertex1, vVertex3 = vVertex3, vVertex1
-		if vVertex2.m_vPos[1] > vVertex3.m_vPos[1]:
+		if vVertex2.m_vPos[1] < vVertex3.m_vPos[1]:
 			vVertex2, vVertex3 = vVertex3, vVertex2
 
 		# 存在一边与x轴平行
 		if vVertex1.m_vPos[1] - vVertex2.m_vPos[1] < 0.5:
 			if vVertex1.m_vPos[0] > vVertex2.m_vPos[0]:
 				vVertex1, vVertex2 = vVertex2, vVertex1
-			return ((vVertex1, vVertex3), (vVertex2, vVertex3))
+			return (((vVertex1, vVertex3), (vVertex2, vVertex3)),)
 
 		if vVertex2.m_vPos[1] - vVertex3.m_vPos[1] < 0.5:
 			if vVertex2.m_vPos[0] > vVertex3.m_vPos[0]:
 				vVertex2, vVertex3 = vVertex3, vVertex2
-			return ((vVertex1, vVertex2), (vVertex1, vVertex3))
+			return (((vVertex1, vVertex2), (vVertex1, vVertex3)),)
 
 		# 不存在一边与x轴平行，一分为二
+		t = (vVertex1.m_vPos[1] - vVertex2.m_vPos[1]) / (vVertex1.m_vPos[1] - vVertex3.m_vPos[1])
+		vInterp = rtmath.vertexInterp(vVertex1, vVertex3, t)
 
+		if vInterp.m_vPos[0] < vVertex2.m_vPos[0]:
+			return (((vVertex1, vInterp),(vVertex1, vVertex2)),((vInterp, vVertex3), (vVertex2, vVertex3)))
+		else:
+			return (((vVertex1, vVertex2), (vVertex1, vInterp)),((vVertex2, vVertex3), (vInterp, vVertex3)))
 
 
 	def drawScanline(self, tTrapezoid):
-		pass
+		tLeft = tTrapezoid[0]
+		tRight = tTrapezoid[1]
+
+		iTopY = int(tLeft[0].m_vPos[1] + 0.5)
+		iBottomY = int(tLeft[1].m_vPos[1] + 0.5)
+		for iCurY in range(iBottomY, iTopY):
+			# 剔除屏幕外的点
+
+			# 纹理映射
+
+			# 光照
+			pass
+
+		# rhw越大的点覆盖越小的点（可以提前）

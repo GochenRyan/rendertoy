@@ -69,7 +69,7 @@ class CUVNCamera(object):
 		mTemp[3, 2] = 1  # 取反
 		self.m_mPerspTrans = mTemp
 
-	def SetPos(self, vAt):
+	def SetLookAt(self, vAt):
 		self.m_vAt = vAt
 		self.calViewTrans()
 
