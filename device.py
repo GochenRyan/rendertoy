@@ -22,7 +22,7 @@ class CDevice(object):
 		for tIndices in lIndice:
 			self.drawPrimitive(lVertex[tIndices[0]], lVertex[tIndices[1]], lVertex[tIndices[0]])
 
-	def drawPrimitive(self, vVertex1, vVertex2, vVertex3):
+	def drawPrimitive(self, oVertex1, oVertex2, oVertex3):
 		"""
 		绘制图元：，法线变换，背面剔除，光栅化
 		"""
@@ -32,45 +32,45 @@ class CDevice(object):
 		mMVP = oCamera.GetViewTrans() * oCamera.GetProjectTrans()
 		mNormalTrans = oCamera.GetNormalTrans()
 
-		vPoint1 = vVertex1.copy()
-		vPoint2 = vVertex2.copy()
-		vPoint3 = vVertex3.copy()
+		oPoint1 = oVertex1.copy()
+		oPoint2 = oVertex2.copy()
+		oPoint3 = oVertex3.copy()
 
 		# MVP变换
-		vPoint1.m_vPos *= mMVP
-		vPoint2.m_vPos *= mMVP
-		vPoint3.m_vPos *= mMVP
+		oPoint1.m_vPos *= mMVP
+		oPoint2.m_vPos *= mMVP
+		oPoint3.m_vPos *= mMVP
 
-		if self.isBackface(vPoint1.m_vPos, vPoint2.m_vPos, vPoint3.m_vPos):
+		if self.isBackface(oPoint1.m_vPos, oPoint2.m_vPos, oPoint3.m_vPos):
 			return
 
 		# 法线变换
-		vPoint1.m_vNorm *= mNormalTrans
-		vPoint2.m_vNorm *= mNormalTrans
-		vPoint3.m_vNorm *= mNormalTrans
+		oPoint1.m_vNorm *= mNormalTrans
+		oPoint2.m_vNorm *= mNormalTrans
+		oPoint3.m_vNorm *= mNormalTrans
 
 		# 归一化
-		self.homogenize(vPoint1.m_vPos)
-		self.homogenize(vPoint2.m_vPos)
-		self.homogenize(vPoint3.m_vPos)
+		self.homogenize(oPoint1.m_vPos)
+		self.homogenize(oPoint2.m_vPos)
+		self.homogenize(oPoint3.m_vPos)
 
 		# rhw
-		self.initRhw(vPoint1)
-		self.initRhw(vPoint2)
-		self.initRhw(vPoint3)
+		self.initRhw(oPoint1)
+		self.initRhw(oPoint2)
+		self.initRhw(oPoint3)
 
 		# 屏幕映射
-		self.screenMapping(vPoint1.m_vPos)
-		self.screenMapping(vPoint2.m_vPos)
-		self.screenMapping(vPoint3.m_vPos)
+		self.screenMapping(oPoint1.m_vPos)
+		self.screenMapping(oPoint2.m_vPos)
+		self.screenMapping(oPoint3.m_vPos)
 
 		# 梯形划分(当作梯形划分为上下两个三角形)
-		tTrapezoids = self.trapezoidTriangle(vPoint1, vPoint2, vPoint3)
+		tTrapezoids = self.trapezoidTriangle(oPoint1, oPoint2, oPoint3)
 		for tTrap in tTrapezoids:
 			self.drawScanline(tTrap)
 
-	def initRhw(self, vVertex):
-		vVertex.rhw = 1. / vVertex.m_vPos[3]
+	def initRhw(self, oVertex):
+		oVertex.rhw = 1. / oVertex.m_vPos[3]
 
 	def screenMapping(self, vPos):
 		vPos[0] *= self.m_iWidth
@@ -95,40 +95,40 @@ class CDevice(object):
 		vPos[1] = (vPos[1] + 1) * 0.5
 		vPos[3] = w
 
-	def trapezoidTriangle(self, vVertex1, vVertex2, vVertex3):
+	def trapezoidTriangle(self, oVertex1, oVertex2, oVertex3):
 		"""切分三角形"""
-		if vVertex1.m_vPos[0] == vVertex1.m_vPos[0] == vVertex3.m_vPos[0]:
+		if oVertex1.m_vPos[0] == oVertex1.m_vPos[0] == oVertex3.m_vPos[0]:
 			return []
-		if vVertex1.m_vPos[1] == vVertex1.m_vPos[1] == vVertex3.m_vPos[1]:
+		if oVertex1.m_vPos[1] == oVertex1.m_vPos[1] == oVertex3.m_vPos[1]:
 			return []
 
 		# y值从高到低
-		if vVertex1.m_vPos[1] < vVertex2.m_vPos[1]:
-			vVertex1, vVertex2 = vVertex2, vVertex1
-		if vVertex1.m_vPos[1] < vVertex3.m_vPos[1]:
-			vVertex1, vVertex3 = vVertex3, vVertex1
-		if vVertex2.m_vPos[1] < vVertex3.m_vPos[1]:
-			vVertex2, vVertex3 = vVertex3, vVertex2
+		if oVertex1.m_vPos[1] < oVertex2.m_vPos[1]:
+			oVertex1, oVertex2 = oVertex2, oVertex1
+		if oVertex1.m_vPos[1] < oVertex3.m_vPos[1]:
+			oVertex1, oVertex3 = oVertex3, oVertex1
+		if oVertex2.m_vPos[1] < oVertex3.m_vPos[1]:
+			oVertex2, oVertex3 = oVertex3, oVertex2
 
 		# 存在一边与x轴平行
-		if vVertex1.m_vPos[1] - vVertex2.m_vPos[1] < 0.5:
-			if vVertex1.m_vPos[0] > vVertex2.m_vPos[0]:
-				vVertex1, vVertex2 = vVertex2, vVertex1
-			return (((vVertex1, vVertex3), (vVertex2, vVertex3)),)
+		if oVertex1.m_vPos[1] - oVertex2.m_vPos[1] < 0.5:
+			if oVertex1.m_vPos[0] > oVertex2.m_vPos[0]:
+				oVertex1, oVertex2 = oVertex2, oVertex1
+			return (((oVertex1, oVertex3), (oVertex2, oVertex3)),)
 
-		if vVertex2.m_vPos[1] - vVertex3.m_vPos[1] < 0.5:
-			if vVertex2.m_vPos[0] > vVertex3.m_vPos[0]:
-				vVertex2, vVertex3 = vVertex3, vVertex2
-			return (((vVertex1, vVertex2), (vVertex1, vVertex3)),)
+		if oVertex2.m_vPos[1] - oVertex3.m_vPos[1] < 0.5:
+			if oVertex2.m_vPos[0] > oVertex3.m_vPos[0]:
+				oVertex2, oVertex3 = oVertex3, oVertex2
+			return (((oVertex1, oVertex2), (oVertex1, oVertex3)),)
 
 		# 不存在一边与x轴平行，一分为二
-		t = (vVertex1.m_vPos[1] - vVertex2.m_vPos[1]) / (vVertex1.m_vPos[1] - vVertex3.m_vPos[1])
-		vInterp = rtmath.vertexInterp(vVertex1, vVertex3, t)
+		t = (oVertex1.m_vPos[1] - oVertex2.m_vPos[1]) / (oVertex1.m_vPos[1] - oVertex3.m_vPos[1])
+		oInterp = rtmath.vertexInterp(oVertex1, oVertex3, t)
 
-		if vInterp.m_vPos[0] < vVertex2.m_vPos[0]:
-			return (((vVertex1, vInterp),(vVertex1, vVertex2)),((vInterp, vVertex3), (vVertex2, vVertex3)))
+		if oInterp.m_vPos[0] < oVertex2.m_vPos[0]:
+			return (((oVertex1, oInterp),(oVertex1, oVertex2)),((oInterp, oVertex3), (oVertex2, oVertex3)))
 		else:
-			return (((vVertex1, vVertex2), (vVertex1, vInterp)),((vVertex2, vVertex3), (vInterp, vVertex3)))
+			return (((oVertex1, oVertex2), (oVertex1, oInterp)),((oVertex2, oVertex3), (oInterp, oVertex3)))
 
 
 	def drawScanline(self, tTrapezoid):
@@ -137,9 +137,23 @@ class CDevice(object):
 
 		iTopY = int(tLeft[0].m_vPos[1] + 0.5)
 		iBottomY = int(tLeft[1].m_vPos[1] + 0.5)
-		for iCurY in range(iBottomY, iTopY):
-			# 剔除屏幕外的点
 
+		oLeftTopVertex = tLeft[0]
+		oleftBottomVertex = tLeft[1]
+		oRightTopVertex = tRight[0]
+		oRightBottomVertex = tRight[1]
+
+		iDeltaY = iTopY - iBottomY
+		for iCurY in range(iBottomY, iTopY):
+			t = (iCurY - iBottomY) / iDeltaY
+			oStartVertex = rtmath.vertexInterp(oleftBottomVertex, oLeftTopVertex, t)
+			oEndVertex = rtmath.vertexInterp(oRightBottomVertex, oRightTopVertex, t)
+
+			iEnd = int(oEndVertex.m_vPos[0] + 0.5)
+			iStart = int(oStartVertex.m_vPos[0] + 0.5)
+			iSampleNum = iEnd - iStart + 1
+
+			# 剔除屏幕外的点
 			# 纹理映射
 
 			# 光照
