@@ -3,20 +3,21 @@ import numpy as np
 from geometry import *
 
 class CDevice(object):
-	def __init__(self, iWidth=800, iHeight=600):
+	def __init__(self, iWidth=800, iHeight=600, mTexture=None):
 		self.m_iWidth = iWidth
 		self.m_iHeight = iHeight
-		self.m_aFrameBuffer = np.zeros((iHeight, iWidth, 4), dtype='uint8') * 255  # 帧缓冲
-		self.m_aZBuffer = np.zeros((iHeight, iWidth),  dtype='float')  # z缓冲
+		self.m_mFrameBuffer = np.zeros((iHeight, iWidth, 4), dtype='uint8') * 255  # 帧缓冲
+		self.m_mZBuffer = np.zeros((iHeight, iWidth),  dtype='float')  # z缓冲
+		self.m_mTexture = mTexture
 
 	def ClearFrameBuffer(self, vColor=vector([0, 0, 0, 255])):
-		self.m_aFrameBuffer[..., 0] = vColor[0]
-		self.m_aFrameBuffer[..., 1] = vColor[1]
-		self.m_aFrameBuffer[..., 2] = vColor[2]
-		self.m_aFrameBuffer[..., 3] = vColor[3]
+		self.m_mFrameBuffer[..., 0] = vColor[0]
+		self.m_mFrameBuffer[..., 1] = vColor[1]
+		self.m_mFrameBuffer[..., 2] = vColor[2]
+		self.m_mFrameBuffer[..., 3] = vColor[3]
 
 	def ClearZBuffer(self):
-		self.m_aZBuffer[...] = 0
+		self.m_mZBuffer[...] = 0
 
 	def DrawMesh(self, lVertex, lIndice):
 		for tIndices in lIndice:
@@ -145,18 +146,53 @@ class CDevice(object):
 
 		iDeltaY = iTopY - iBottomY
 		for iCurY in range(iBottomY, iTopY):
+			# 剔除屏幕外的点
+			if iCurY > self.m_iHeight:
+				break
+			if iCurY < 0:
+				continue
+			
 			t = (iCurY - iBottomY) / iDeltaY
 			oStartVertex = rtmath.vertexInterp(oleftBottomVertex, oLeftTopVertex, t)
 			oEndVertex = rtmath.vertexInterp(oRightBottomVertex, oRightTopVertex, t)
 
 			iEnd = int(oEndVertex.m_vPos[0] + 0.5)
 			iStart = int(oStartVertex.m_vPos[0] + 0.5)
-			iSampleNum = iEnd - iStart + 1
-
+			
 			# 剔除屏幕外的点
-			# 纹理映射
+			if iEnd < 0:
+				break
+			if iStart > self.m_iWidth:
+				break
 
-			# 光照
+			oRealStart = oStartVertex
+			oRealEnd = oEndVertex
+			if iStart < 0 < iEnd:
+				t = -iStart / (iEnd - iStart)
+				oRealStart = rtmath.vertexInterp(oStartVertex, oEndVertex, t)
+				oRealEnd = oEndVertex
+				iStart = 0
+			if iStart < self.m_iWidth < iEnd:
+				t = (self.m_iWidth - iStart) / (iEnd - iStart)
+				oRealEnd = rtmath.vertexInterp(oStartVertex, oEndVertex, t)
+				oRealStart = oStartVertex
+				iEnd = self.m_iWidth
+
+			iSampleNum = iEnd - iStart + 1
+			mLineFrameBuffer = self.m_mFrameBuffer[iCurY, iStart: iEnd]
+			mLineZBuffer = self.m_mZBuffer[iCurY: iStart: iEnd]
+
+			# 纹理映射
+			mTexLine = self.textureLine(self.m_mTexture, oRealStart, oRealEnd)
+
+			#todo: 光照
 			pass
 
-		# rhw越大的点覆盖越小的点（可以提前）
+		#todo: rhw越大的点覆盖越小的点（可以提前）
+
+	def textureLine(self, mFrameBuffer, oStart, oEnd):
+		"""
+		读取texcoord对应的纹理
+		"""
+		iH, iW, iC = mFrameBuffer.shape
+		#todo: 映射

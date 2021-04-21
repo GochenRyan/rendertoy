@@ -98,12 +98,12 @@ if __name__ == '__main__':
 	]
 
 	# 纹理（棋盘格）
-	aTexture = np.array((256, 256, 4), dtype="uint8") * 255
+	mTexture = np.ones((256, 256, 4), dtype="uint8") * 255
 	grid_size = 32
 	for i in range(8):
 		# 每隔1个格子
 		for j in [x * 2 for x in range(4)]:
-			aTexture[i * grid_size: (i + 1) * grid_size, (j + i % 2) * grid_size: (j + i % 2 + 1) * grid_size, :] = vector([1, 128, 255, 255])
+			mTexture[i * grid_size: (i + 1) * grid_size, (j + i % 2) * grid_size: (j + i % 2 + 1) * grid_size, :] = vector([1, 128, 255, 255])
 
 	oDevice = device.CDevice(I_WINDOW_WIDTH, I_WINDOW_HEIGHT)
 	oCameraMgr = camera.CMgr()
