@@ -1,4 +1,5 @@
 import rtmath
+import light
 import numpy as np
 from geometry import *
 
@@ -183,16 +184,30 @@ class CDevice(object):
 			mLineZBuffer = self.m_mZBuffer[iCurY: iStart: iEnd]
 
 			# 纹理映射
-			mTexLine = self.textureLine(self.m_mTexture, oRealStart, oRealEnd)
+			mTexLine = self.textureLine(self.m_mTexture, oRealStart, oRealEnd, iSampleNum)
 
-			#todo: 光照
-			pass
+			# 光照
+			oLightMgr = light.CMgr()
+			oPointLight = oLightMgr.GetCamera(light.I_POINT_LIGHT)
+			for vColor in mTexLine:
+				#todo: 完犊子，世界空间坐标拿不到了
+				pass
+
 
 		#todo: rhw越大的点覆盖越小的点（可以提前）
 
-	def textureLine(self, mFrameBuffer, oStart, oEnd):
+
+	def textureLine(self, mFrameBuffer, oStart, oEnd, iSampleNum):
 		"""
 		读取texcoord对应的纹理
 		"""
 		iH, iW, iC = mFrameBuffer.shape
-		#todo: 映射
+
+		# 映射
+		vX = (np.linspace(oStart.m_vTexCoord[0], oEnd.m_vTexCoord[0], iSampleNum) * iW + 0.5).astype(int)
+		vY = (np.linspace(oStart.m_vTexCoord[1], oEnd.m_vTexCoord[1], iSampleNum) * iH + 0.5).astype(int)
+
+		if iSampleNum > 1:
+			return mFrameBuffer[vX, vY]
+		else:
+			return mFrameBuffer[vX[0], vY[0]]
