@@ -5,7 +5,7 @@ from geometry import vector
 
 def Test1():
 	oCameraMgr = camera.CMgr()
-	oCamera = oCameraMgr.GetCamera(camera.I_TYPE_NORMAL)
+	oCamera = oCameraMgr.GetCamera(camera.TYPE_NORMAL)
 	oCamera.SetEye(vector([-3, 0, 0, 1]))
 	oCamera.SetLookAt(vector([-2, 0, 0, 1]))
 	oCamera.SetUp(vector([0, 1, 0, 0]))
@@ -23,7 +23,7 @@ def Test2():
 	Z的范围映射到[-1,1]。当Z等于NearZ时映射结果为-1，而当Z等于FarZ时映射结果为1
 	"""
 	oCameraMgr = camera.CMgr()
-	oCamera = oCameraMgr.GetCamera(camera.I_TYPE_NORMAL)
+	oCamera = oCameraMgr.GetCamera(camera.TYPE_NORMAL)
 	oCamera.SetEye(vector([-3, 0, 0, 1]))
 	oCamera.SetLookAt(vector([-2, 0, 0, 1]))
 	oCamera.SetUp(vector([0, 1, 0, 0]))

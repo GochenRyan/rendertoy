@@ -5,7 +5,7 @@ import numpy as np
 import rtmath
 from geometry import vector
 
-I_TYPE_NORMAL = 1
+TYPE_NORMAL = 1
 
 class CUVNCamera(object):
 	def __init__(self, vEye=vector([0, 0, -3, 1]), vAt=vector([0.23, 0, 0, 1]), vUp=vector([0, 1, 0, 0]), fFov=0.5*np.pi, fAspect=1.0, fNear=1.0, fFar=500.0):
@@ -92,3 +92,6 @@ class CUVNCamera(object):
 
 	def SetFar(self, fFar):
 		self.m_fFar = fFar
+
+	def GetEye(self):
+		return self.m_vEye

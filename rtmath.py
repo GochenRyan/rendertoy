@@ -15,6 +15,7 @@ def vertexInterp(oVertex1, oVertex2, t):
 	vInterp.m_vTexCoord = interp(oVertex1.m_vTexCoord, oVertex2.m_vTexCoord, t)
 	vInterp.m_vNorm = interp(oVertex1.m_vNorm, oVertex2.m_vNorm, t)
 	vInterp.m_fRhw = interp(oVertex1.m_fRhw, oVertex2.m_fRhw, t)
+	vInterp.m_vWorldPos = interp(oVertex1.m_vWorldPos, oVertex2.m_vWorldPos, t)
 	return vInterp
 
 def reflect(vIncidentDir, vNorm):

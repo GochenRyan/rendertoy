@@ -26,17 +26,19 @@ class CMesh(object):
 顶点
 """
 class CVertex(object):
-	def __init__(self, vPos=None, vNorm=None, vTexCoord=None, fRhw=None):
+	def __init__(self, vPos=None, vNorm=None, vTexCoord=None, fRhw=None, vWorldPos=None):
 		self.m_vPos = vector([0.0, 0.0, 0.0, 1.0]) if vPos is None else vPos  # 位置
 		self.m_vNorm = vector([0.0, 0.0, 0.0, 0.0]) if vNorm is None else vNorm  # 法线
 		self.m_vTexCoord = vector([0.0, 0.0]) if vTexCoord is None else vTexCoord  # 纹理坐标
 		self.m_fRhw = 1.0 if fRhw is None else fRhw  # 1 / w
+		self.m_vWorldPos = vector([0.0, 0.0, 0.0, 1.0]) if vWorldPos is None else vWorldPos
 
 	def copy(self):
 		return CVertex(vPos=self.m_vPos.copy(),
 					   vNorm=self.m_vNorm.copy(),
 					   vTexCoord=self.m_vTexCoord.copy(),
-					   fRhw=self.m_fRhw.copy())
+					   fRhw=self.m_fRhw.copy(),
+					   vWorldPos=self.m_vWorldPos.copy())
 
 	def __str__(self):
 		return """
@@ -44,7 +46,9 @@ class CVertex(object):
 			normal: ({4}, {5}, {6}, {7})
 			texcoord: ({8}, {9})
 			rhw: {10}
+			world pos: {11}
 		""".format(self.m_vPos[0], self.m_vPos[1], self.m_vPos[2], self.m_vPos[3],
 					self.m_vNorm[0], self.m_vNorm[1], self.m_vNorm[2], self.m_vNorm[3],
 					self.m_vTexCoord[0], self.m_vTexCoord[1],
-					self.m_fRhw)
+					self.m_fRhw,
+					self.m_vWorldPos)

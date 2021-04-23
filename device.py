@@ -1,5 +1,6 @@
 import rtmath
 import light
+import camera
 import numpy as np
 from geometry import *
 
@@ -28,9 +29,8 @@ class CDevice(object):
 		"""
 		绘制图元：，法线变换，背面剔除，光栅化
 		"""
-		import camera
 		oCameraMgr = camera.CMgr()
-		oCamera = oCameraMgr.GetCamera(camera.I_TYPE_NORMAL)
+		oCamera = oCameraMgr.GetCamera(camera.TYPE_NORMAL)
 		mMVP = oCamera.GetViewTrans() * oCamera.GetProjectTrans()
 		mNormalTrans = oCamera.GetNormalTrans()
 
@@ -39,6 +39,10 @@ class CDevice(object):
 		oPoint3 = oVertex3.copy()
 
 		# MVP变换
+		oPoint1.m_vWorldPos = oPoint1.m_vPos
+		oPoint2.m_vWorldPos = oPoint2.m_vPos
+		oPoint3.m_vWorldPos = oPoint3.m_vPos
+
 		oPoint1.m_vPos *= mMVP
 		oPoint2.m_vPos *= mMVP
 		oPoint3.m_vPos *= mMVP
@@ -184,15 +188,38 @@ class CDevice(object):
 			mLineZBuffer = self.m_mZBuffer[iCurY: iStart: iEnd]
 
 			# 纹理映射
-			mTexLine = self.textureLine(self.m_mTexture, oRealStart, oRealEnd, iSampleNum)
+			mLineTex = self.textureLine(self.m_mTexture, oRealStart, oRealEnd, iSampleNum)
+			mLineWorldPos = np.linspace(oRealStart.m_vWorldPos, oRealEnd.m_vWorldPos, iSampleNum)
+			mLineNorm = np.linspace(oRealStart.m_vNorm, oRealEnd.m_vNorm, iSampleNum)
 
-			# 光照
 			oLightMgr = light.CMgr()
-			oPointLight = oLightMgr.GetCamera(light.I_POINT_LIGHT)
-			for vColor in mTexLine:
-				#todo: 完犊子，世界空间坐标拿不到了
-				pass
+			lPointLight = oLightMgr.GetLights(light.TYPE_POINT_LIGHT)
+			oCameraMgr = camera.CMgr()
+			oCamera = oCameraMgr.GetCamera(camera.TYPE_NORMAL)
+			vCameraPos =oCamera.GetEye()
 
+			# 冯氏光照模型，Phong着色
+			for oPointLight in lPointLight:
+				vLightPos = oPointLight.GetPos()
+				vLightColor = oPointLight.GetColor()
+				for i in range(iSampleNum):
+					# 环境
+					vAmbient = 0.1 * vLightColor
+
+					# 漫反射
+					vNorm = mLineNorm[i]
+					vLightDir = rtmath.normalize(vLightPos - mLineWorldPos[i])
+					vDiffuse = max(np.dot(vNorm, vLightDir), 0) * vLightColor
+
+					# 镜面反射
+					vFragWorldPos = mLineWorldPos[i]
+					vViewDir = rtmath.normalize(vCameraPos - vFragWorldPos)
+					vIncidentDir = rtmath.normalize(vFragWorldPos - vLightPos)
+					vReflectDir = rtmath.reflect(vIncidentDir, vNorm)
+					vSpec = 0.5 * pow(max(np.dot(vViewDir, vReflectDir), 0.), 32) * vLightColor
+					vFragColor = (vAmbient + vDiffuse + vSpec) * mLineTex[i]
+
+					mLineTex[i] = vFragColor
 
 		#todo: rhw越大的点覆盖越小的点（可以提前）
 

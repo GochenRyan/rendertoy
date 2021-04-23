@@ -4,6 +4,7 @@ from defines import *
 from geometry import *
 import device
 import camera
+import light
 
 """
 3D流水线：物体->多边形->顶点->变换->光栅化->屏幕
@@ -98,16 +99,19 @@ if __name__ == '__main__':
 	]
 
 	# 纹理（棋盘格）
-	mTexture = np.ones((256, 256, 4), dtype="uint8") * 255
+	mTexture = np.ones((256, 256, 4), dtype="uint8")
 	grid_size = 32
 	for i in range(8):
 		# 每隔1个格子
 		for j in [x * 2 for x in range(4)]:
-			mTexture[i * grid_size: (i + 1) * grid_size, (j + i % 2) * grid_size: (j + i % 2 + 1) * grid_size, :] = vector([1, 128, 255, 255])
+			mTexture[i * grid_size: (i + 1) * grid_size, (j + i % 2) * grid_size: (j + i % 2 + 1) * grid_size, :] = vector([1. / 255, 128. / 255, 1, 1])
 
 	oDevice = device.CDevice(I_WINDOW_WIDTH, I_WINDOW_HEIGHT)
 	oCameraMgr = camera.CMgr()
-	oCamera = oCameraMgr.GetCamera(camera.I_TYPE_NORMAL)
+	oCamera = oCameraMgr.GetCamera(camera.TYPE_NORMAL)
+	oLight = light.CPointLight(1)
+	oLightMgr = light.CMgr()
+	oLightMgr.AddLight(oLight)
 	mMVP = oCamera.GetViewTrans() * oCamera.GetProjectTrans()
 	mNormalTrans = oCamera.GetNormalTrans()
 
@@ -119,7 +123,7 @@ if __name__ == '__main__':
 		print("-----ondraw")
 
 		#todo: 清理帧缓冲、Z缓冲
-		oDevice.ClearFrameBuffer(vector([128, 33, 78, 255]))
+		oDevice.ClearFrameBuffer(vector([128. / 255, 33. / 255, 78. / 255, 1]))
 		oDevice.ClearZBuffer()
 
 		#todo: mvp变换

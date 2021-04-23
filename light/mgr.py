@@ -6,8 +6,22 @@ class CMgr(object):
 	__metaclass__ = base.Singleton
 	def __init__(self):
 		self.m_dType2Light = {
-			I_POINT_LIGHT: lightobj.CPointLight()
+			TYPE_POINT_LIGHT: []
 		}
 
-	def GetCamera(self, iType):
-		return self.m_dType2Light.get(iType)
+	def AddLight(self, oLight):
+		iType = oLight.I_TYPE
+		lLight = self.m_dType2Light.get(iType, None)
+		if lLight is None:
+			return
+		lLight.append(oLight)
+
+	def GetLights(self, sType):
+		return self.m_dType2Light.get(sType, [])
+
+	def GetLight(self, iID):
+		for sType, lLight in self.m_dType2Light.items():
+			for oLight in lLight:
+				if oLight.m_iID == iID:
+					return oLight
+		return None
