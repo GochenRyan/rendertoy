@@ -11,6 +11,10 @@ class CDevice(object):
 		self.m_mFrameBuffer = np.zeros((iHeight, iWidth, 4), dtype='uint8') * 255  # 帧缓冲
 		self.m_mZBuffer = np.zeros((iHeight, iWidth),  dtype='float')  # z缓冲
 		self.m_mTexture = mTexture
+		self.m_mModelTrans = np.eye(4)
+
+	def GetNormalTrans(self):
+		return np.linalg.inv(self.m_mModelTrans[:3, :3]).T
 
 	def ClearFrameBuffer(self, vColor=vector([0, 0, 0, 255])):
 		self.m_mFrameBuffer[..., 0] = vColor[0]
@@ -31,30 +35,40 @@ class CDevice(object):
 		"""
 		oCameraMgr = camera.CMgr()
 		oCamera = oCameraMgr.GetCamera(camera.TYPE_NORMAL)
-		mMVP = oCamera.GetViewTrans() * oCamera.GetProjectTrans()
-		mNormalTrans = oCamera.GetNormalTrans()
+		print("------modelTrans", self.m_mModelTrans)
+		mMV = np.dot(self.m_mModelTrans, oCamera.GetViewTrans())
+		mMVP = np.dot(mMV, oCamera.GetProjectTrans())
+
+		mNormalTrans = self.GetNormalTrans()
 
 		oPoint1 = oVertex1.copy()
 		oPoint2 = oVertex2.copy()
 		oPoint3 = oVertex3.copy()
 
 		# MVP变换
-		oPoint1.m_vWorldPos = oPoint1.m_vPos
-		oPoint2.m_vWorldPos = oPoint2.m_vPos
-		oPoint3.m_vWorldPos = oPoint3.m_vPos
+		oPoint1.m_vWorldPos = oPoint1.m_vPos.copy()
+		oPoint2.m_vWorldPos = oPoint2.m_vPos.copy()
+		oPoint3.m_vWorldPos = oPoint3.m_vPos.copy()
 
-		oPoint1.m_vPos *= mMVP
-		oPoint2.m_vPos *= mMVP
-		oPoint3.m_vPos *= mMVP
+		print(mMVP)
+		print(oPoint1.m_vPos, oPoint2.m_vPos, oPoint3.m_vPos)
+
+		oPoint1.m_vPos = np.dot(mMVP, oPoint1.m_vPos)
+		oPoint2.m_vPos = np.dot(mMVP, oPoint2.m_vPos)
+		oPoint3.m_vPos = np.dot(mMVP, oPoint3.m_vPos)
 
 		if self.isBackface(oPoint1.m_vPos, oPoint2.m_vPos, oPoint3.m_vPos):
 			return
 
+		print("-------mNormalTrans", mNormalTrans)
+		print("------m_vPos1", oPoint1.m_vPos)
 		# 法线变换
-		oPoint1.m_vNorm *= mNormalTrans
-		oPoint2.m_vNorm *= mNormalTrans
-		oPoint3.m_vNorm *= mNormalTrans
+		oPoint1.m_vNorm = np.dot(mNormalTrans, oPoint1.m_vNorm[:3])
+		oPoint2.m_vNorm = np.dot(mNormalTrans, oPoint2.m_vNorm[:3])
+		oPoint3.m_vNorm = np.dot(mNormalTrans, oPoint3.m_vNorm[:3])
 
+
+		print("------m_vPos2", oPoint1.m_vPos)
 		# 归一化
 		self.homogenize(oPoint1.m_vPos)
 		self.homogenize(oPoint2.m_vPos)
@@ -87,8 +101,8 @@ class CDevice(object):
 		判断是否是逆时针：
 		(x1 * y2 - x2 * y1) + (x2 * y3 - x3 * y2) + (x3 * y1 - x1 * y3) >=  0
 		"""
-		mPos = np.vstack((vPos1, vPos2, vPos3))
-		return (np.linalg.det(mPos[:2, :2]) + np.linalg.det(mPos[1:3, :2]) + np.linalg.det(mPos[2:4, 2:4])) >= 0
+		mPos = np.vstack((vPos1, vPos2, vPos3, vPos1))
+		return (np.linalg.det(mPos[:2, :2]) + np.linalg.det(mPos[1:3, :2]) + np.linalg.det(mPos[2:4, :2])) < 0
 
 	def homogenize(self, vPos):
 		"""
@@ -185,7 +199,8 @@ class CDevice(object):
 
 			iSampleNum = iEnd - iStart + 1
 			mLineFrameBuffer = self.m_mFrameBuffer[iCurY, iStart: iEnd]
-			mLineZBuffer = self.m_mZBuffer[iCurY: iStart: iEnd]
+			mLineZBuffer = self.m_mZBuffer[iCurY, iStart: iEnd]
+			vRhw = np.linspace(oStartVertex.m_fRhw, oEndVertex.m_fRhw, iSampleNum)
 
 			# 纹理映射
 			mLineTex = self.textureLine(self.m_mTexture, oRealStart, oRealEnd, iSampleNum)
@@ -219,9 +234,12 @@ class CDevice(object):
 					vSpec = 0.5 * pow(max(np.dot(vViewDir, vReflectDir), 0.), 32) * vLightColor
 					vFragColor = (vAmbient + vDiffuse + vSpec) * mLineTex[i]
 
-					mLineTex[i] = vFragColor
+					mLineTex[i] = ((vFragColor * 255) + 0.5).astype(int)
 
-		#todo: rhw越大的点覆盖越小的点（可以提前）
+			# rhw越大的点覆盖越小的点
+			vMask = mLineZBuffer <= vRhw
+			mLineFrameBuffer[vMask] = mLineTex[vMask]
+			mLineZBuffer[vMask] = vRhw[vMask]
 
 
 	def textureLine(self, mFrameBuffer, oStart, oEnd, iSampleNum):

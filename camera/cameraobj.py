@@ -18,15 +18,6 @@ class CUVNCamera(object):
 		self.m_fNear = fNear  # 近裁剪平面
 		self.m_fFar = fFar  # 远裁剪平面
 		self.m_mPerspTrans = None
-		self.m_mNormalTrans = None
-
-	def GetNormalTrans(self):
-		self.calNormalTrans()
-		return self.m_mNormalTrans
-
-	def calNormalTrans(self):
-		self.calViewTrans()
-		return np.linalg.inv(self.m_mViewTrans[:3, :3]).T
 
 	def GetViewTrans(self):
 		self.calViewTrans()

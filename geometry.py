@@ -37,7 +37,7 @@ class CVertex(object):
 		return CVertex(vPos=self.m_vPos.copy(),
 					   vNorm=self.m_vNorm.copy(),
 					   vTexCoord=self.m_vTexCoord.copy(),
-					   fRhw=self.m_fRhw.copy(),
+					   fRhw=self.m_fRhw,
 					   vWorldPos=self.m_vWorldPos.copy())
 
 	def __str__(self):
