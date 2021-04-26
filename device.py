@@ -35,9 +35,15 @@ class CDevice(object):
 		"""
 		oCameraMgr = camera.CMgr()
 		oCamera = oCameraMgr.GetCamera(camera.TYPE_NORMAL)
-		print("------modelTrans", self.m_mModelTrans)
-		mMV = np.dot(self.m_mModelTrans, oCamera.GetViewTrans())
-		mMVP = np.dot(mMV, oCamera.GetProjectTrans())
+		print("------m", self.m_mModelTrans)
+		print("------v", oCamera.GetViewTrans())
+		print("------p", oCamera.GetProjectTrans())
+		mMV = np.dot(oCamera.GetViewTrans(), self.m_mModelTrans)
+		mMVP = np.dot(oCamera.GetProjectTrans(), mMV)
+
+		# print("------m", self.m_mModelTrans)
+		# print("------v", oCamera.GetViewTrans())
+		# print("------p", oCamera.GetProjectTrans())
 
 		mNormalTrans = self.GetNormalTrans()
 
@@ -50,29 +56,27 @@ class CDevice(object):
 		oPoint2.m_vWorldPos = oPoint2.m_vPos.copy()
 		oPoint3.m_vWorldPos = oPoint3.m_vPos.copy()
 
-		print(mMVP)
-		print(oPoint1.m_vPos, oPoint2.m_vPos, oPoint3.m_vPos)
-
 		oPoint1.m_vPos = np.dot(mMVP, oPoint1.m_vPos)
 		oPoint2.m_vPos = np.dot(mMVP, oPoint2.m_vPos)
 		oPoint3.m_vPos = np.dot(mMVP, oPoint3.m_vPos)
 
+		print("-------after mvp", oPoint1, oPoint2, oPoint3)
+
 		if self.isBackface(oPoint1.m_vPos, oPoint2.m_vPos, oPoint3.m_vPos):
 			return
 
-		print("-------mNormalTrans", mNormalTrans)
-		print("------m_vPos1", oPoint1.m_vPos)
 		# 法线变换
-		oPoint1.m_vNorm = np.dot(mNormalTrans, oPoint1.m_vNorm[:3])
-		oPoint2.m_vNorm = np.dot(mNormalTrans, oPoint2.m_vNorm[:3])
-		oPoint3.m_vNorm = np.dot(mNormalTrans, oPoint3.m_vNorm[:3])
+		oPoint1.m_vNorm[:3] = np.dot(mNormalTrans, oPoint1.m_vNorm[:3])
+		oPoint2.m_vNorm[:3] = np.dot(mNormalTrans, oPoint2.m_vNorm[:3])
+		oPoint3.m_vNorm[:3] = np.dot(mNormalTrans, oPoint3.m_vNorm[:3])
 
 
-		print("------m_vPos2", oPoint1.m_vPos)
 		# 归一化
-		self.homogenize(oPoint1.m_vPos)
-		self.homogenize(oPoint2.m_vPos)
-		self.homogenize(oPoint3.m_vPos)
+		self.homogenize(oPoint1)
+		self.homogenize(oPoint2)
+		self.homogenize(oPoint3)
+
+		print("-------after homogenize", oPoint1, oPoint2, oPoint3)
 
 		# rhw
 		self.initRhw(oPoint1)
@@ -84,13 +88,18 @@ class CDevice(object):
 		self.screenMapping(oPoint2.m_vPos)
 		self.screenMapping(oPoint3.m_vPos)
 
+		print("-------after screenMapping", oPoint1, oPoint2, oPoint3)
+
 		# 梯形划分(当作梯形划分为上下两个三角形)
 		tTrapezoids = self.trapezoidTriangle(oPoint1, oPoint2, oPoint3)
+
+		print("------tTrapezoids", tTrapezoids)
+
 		for tTrap in tTrapezoids:
 			self.drawScanline(tTrap)
 
 	def initRhw(self, oVertex):
-		oVertex.rhw = 1. / oVertex.m_vPos[3]
+		oVertex.m_fRhw = 1. / oVertex.m_vPos[3]
 
 	def screenMapping(self, vPos):
 		vPos[0] *= self.m_iWidth
@@ -104,16 +113,17 @@ class CDevice(object):
 		mPos = np.vstack((vPos1, vPos2, vPos3, vPos1))
 		return (np.linalg.det(mPos[:2, :2]) + np.linalg.det(mPos[1:3, :2]) + np.linalg.det(mPos[2:4, :2])) < 0
 
-	def homogenize(self, vPos):
+	def homogenize(self, oVertex):
 		"""
 		归一化：
 		([-1, 1] + 1) * 0.5
 		"""
-		w = vPos[3]
-		vPos = vPos / w
+		w = oVertex.m_vPos[3]
+		vPos = oVertex.m_vPos / w
 		vPos[0] = (vPos[0] + 1) * 0.5
 		vPos[1] = (vPos[1] + 1) * 0.5
 		vPos[3] = w
+		oVertex.m_vPos = vPos
 
 	def trapezoidTriangle(self, oVertex1, oVertex2, oVertex3):
 		"""切分三角形"""
@@ -198,8 +208,8 @@ class CDevice(object):
 				iEnd = self.m_iWidth
 
 			iSampleNum = iEnd - iStart + 1
-			mLineFrameBuffer = self.m_mFrameBuffer[iCurY, iStart: iEnd]
-			mLineZBuffer = self.m_mZBuffer[iCurY, iStart: iEnd]
+			mLineFrameBuffer = self.m_mFrameBuffer[iCurY, iStart: iEnd + 1]
+			mLineZBuffer = self.m_mZBuffer[iCurY, iStart: iEnd + 1]
 			vRhw = np.linspace(oStartVertex.m_fRhw, oEndVertex.m_fRhw, iSampleNum)
 
 			# 纹理映射
@@ -237,6 +247,9 @@ class CDevice(object):
 					mLineTex[i] = ((vFragColor * 255) + 0.5).astype(int)
 
 			# rhw越大的点覆盖越小的点
+
+			print("------mLineZBuffer, vRhw", mLineZBuffer.shape, vRhw.shape)
+
 			vMask = mLineZBuffer <= vRhw
 			mLineFrameBuffer[vMask] = mLineTex[vMask]
 			mLineZBuffer[vMask] = vRhw[vMask]

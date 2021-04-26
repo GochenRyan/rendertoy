@@ -46,9 +46,9 @@ class CVertex(object):
 			normal: ({4}, {5}, {6}, {7})
 			texcoord: ({8}, {9})
 			rhw: {10}
-			world pos: {11}
+			world pos: ({11}, {12}, {13}, {14})
 		""".format(self.m_vPos[0], self.m_vPos[1], self.m_vPos[2], self.m_vPos[3],
 					self.m_vNorm[0], self.m_vNorm[1], self.m_vNorm[2], self.m_vNorm[3],
 					self.m_vTexCoord[0], self.m_vTexCoord[1],
 					self.m_fRhw,
-					self.m_vWorldPos)
+					self.m_vWorldPos[0], self.m_vWorldPos[1], self.m_vWorldPos[2], self.m_vWorldPos[3])

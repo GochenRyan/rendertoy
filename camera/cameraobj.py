@@ -57,7 +57,7 @@ class CUVNCamera(object):
 		mTemp[1, 1] = cot
 		mTemp[2, 2] = (self.m_fNear + self.m_fFar) / zRange  # 取反
 		mTemp[2, 3] = 2 * self.m_fFar * self.m_fNear / zRange
-		mTemp[3, 2] = 1  # 取反
+		mTemp[3, 2] = -1  # 取反
 		self.m_mPerspTrans = mTemp
 
 	def SetLookAt(self, vAt):

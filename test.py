@@ -28,8 +28,8 @@ def Test2():
 	oCamera.SetLookAt(vector([-2, 0, 0, 1]))
 	oCamera.SetUp(vector([0, 1, 0, 0]))
 	oCamera.SetAspect(0.5)
-	oCamera.SetFar(3.0)
-	vFarPos = vector([0, 0, 0, 1])  # far
+	oCamera.SetFar(300.0)
+	vFarPos = vector([298, 0, 0, 1])  # far
 	vNearPos = vector([-2, 0, 0, 1])  # near
 
 	mViewing = oCamera.GetViewTrans()
@@ -48,15 +48,25 @@ def Test2():
 	vVertex1 = vector([30, 40, 0, 1])
 	print(np.dot(mPresp, vVertex1))
 
+	mMV = np.dot(mViewing, np.eye(4))
+	mMVP = np.dot(mPresp, mMV)
+
+	print("------m", np.eye(4))
+	print("------v", mViewing)
+	print("------p", mPresp)
+
+	print("vFarPos after mvp: ", np.dot(mMVP, vFarPos))
+	print("vNearPos after mvp: ", np.dot(mMVP, vNearPos))
+
 
 
 def Test3():
 	import geometry
 	import device
 	oDevice = device.CDevice()
-	oVertex1 = geometry.CVertex(vector([30, 40, 0, 1]), vector([0, 0, 1, 0]), vector([0, 0]), 0.5)
-	oVertex2 = geometry.CVertex(vector([10, 20, 0, 1]), vector([0, 0, 1, 0]), vector([1, 0]), 0.8)
-	oVertex3 = geometry.CVertex(vector([20, 0, 0, 1]), vector([0, 0, 1, 0]), vector([0, 1]), 0.2)
+	oVertex1 = geometry.CVertex(vector([30, 40, 0, 1]), vector([0, 0, 1, 0]), vector([0, 0]), 1)
+	oVertex2 = geometry.CVertex(vector([10, 20, 0, 1]), vector([0, 0, 1, 0]), vector([1, 0]), 1)
+	oVertex3 = geometry.CVertex(vector([20, 0, 0, 1]), vector([0, 0, 1, 0]), vector([0, 1]),  1)
 
 	tTrapezoids = oDevice.trapezoidTriangle(oVertex1, oVertex2, oVertex3)
 	print(tTrapezoids)
@@ -79,6 +89,9 @@ def Test4():
 	oCamera.SetAspect(0.5)
 	oCamera.SetFar(300.0)
 
+	print("------v", oCamera.GetViewTrans())
+	print("------p", oCamera.GetProjectTrans())
+
 	mTexture = np.ones((256, 256, 4), dtype="uint8")
 	grid_size = 32
 	for i in range(8):
@@ -88,9 +101,12 @@ def Test4():
 			:] = vector([1. / 255, 128. / 255, 1, 1])
 
 	oDevice = device.CDevice(mTexture=mTexture)
-	oVertex1 = geometry.CVertex(vector([30, 40, 0, 1]), vector([0, 0, 1, 0]), vector([0, 0]), 0.5)
-	oVertex2 = geometry.CVertex(vector([10, 20, 0, 1]), vector([0, 0, 1, 0]), vector([1, 0]), 0.8)
-	oVertex3 = geometry.CVertex(vector([20, 0, 0, 1]), vector([0, 0, 1, 0]), vector([0, 1]), 0.2)
+
+	# 屏幕内
+	oVertex1 = geometry.CVertex(vector([0, 0, 1, 1]), vector([0, 0, 1, 0]), vector([0, 0]), 1)
+	oVertex2 = geometry.CVertex(vector([0, -2, 0, 1]), vector([0, 0, 1, 0]), vector([1, 0]), 1)
+	oVertex3 = geometry.CVertex(vector([0, 1, 0, 1]), vector([0, 0, 1, 0]), vector([0, 1]), 1)
+
 	oDevice.drawPrimitive(oVertex1, oVertex2, oVertex3)
 	print("------zbuff:")
 	iCount = 0
@@ -105,4 +121,4 @@ def Test4():
 	# print(oDevice.m_mFrameBuffer)
 
 if __name__== '__main__':
-	Test2()
+	Test4()

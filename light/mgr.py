@@ -4,10 +4,9 @@ from .defines import *
 
 class CMgr(object):
 	__metaclass__ = base.Singleton
-	def __init__(self):
-		self.m_dType2Light = {
-			TYPE_POINT_LIGHT: []
-		}
+	m_dType2Light = {
+		TYPE_POINT_LIGHT: []
+	}
 
 	def AddLight(self, oLight):
 		iType = oLight.I_TYPE
