@@ -13,6 +13,9 @@ class CDevice(object):
 		self.m_mTexture = mTexture
 		self.m_mModelTrans = np.eye(4)
 
+	def GetFramebuffer(self):
+		return self.m_mFrameBuffer
+
 	def GetNormalTrans(self):
 		return np.linalg.inv(self.m_mModelTrans[:3, :3]).T
 
@@ -111,10 +114,12 @@ class CDevice(object):
 
 	def trapezoidTriangle(self, oVertex1, oVertex2, oVertex3):
 		"""切分三角形"""
-		if oVertex1.m_vPos[0] == oVertex1.m_vPos[0] == oVertex3.m_vPos[0]:
+		if oVertex1.m_vPos[0] == oVertex2.m_vPos[0] == oVertex3.m_vPos[0]:
 			return []
-		if oVertex1.m_vPos[1] == oVertex1.m_vPos[1] == oVertex3.m_vPos[1]:
+		if oVertex1.m_vPos[1] == oVertex2.m_vPos[1] == oVertex3.m_vPos[1]:
 			return []
+
+		print("------1111")
 
 		# y值从高到低
 		if oVertex1.m_vPos[1] < oVertex2.m_vPos[1]:
@@ -143,7 +148,6 @@ class CDevice(object):
 			return (((oVertex1, oInterp),(oVertex1, oVertex2)),((oInterp, oVertex3), (oVertex2, oVertex3)))
 		else:
 			return (((oVertex1, oVertex2), (oVertex1, oInterp)),((oVertex2, oVertex3), (oInterp, oVertex3)))
-
 
 	def drawScanline(self, tTrapezoid):
 		tLeft = tTrapezoid[0]
@@ -226,15 +230,15 @@ class CDevice(object):
 					vIncidentDir = rtmath.normalize(vFragWorldPos - vLightPos)
 					vReflectDir = rtmath.reflect(vIncidentDir, vNorm)
 					vSpec = 0.5 * pow(max(np.dot(vViewDir, vReflectDir), 0.), 32) * vLightColor
+					print("------drawScanline", vAmbient, vDiffuse, vSpec, mLineTex[i])
 					vFragColor = (vAmbient + vDiffuse + vSpec) * mLineTex[i]
 
 					mLineTex[i] = ((vFragColor * 255) + 0.5).astype(int)
 
 			# rhw越大的点覆盖越小的点
-
-
 			vMask = mLineZBuffer <= vRhw
 			mLineFrameBuffer[vMask] = mLineTex[vMask]
+			print("------mLineFrameBuffer", mLineFrameBuffer)
 			mLineZBuffer[vMask] = vRhw[vMask]
 
 

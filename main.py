@@ -22,12 +22,9 @@ import light
 2. 右乘、列矩阵
 """
 
-I_WINDOW_WIDTH = 800
-I_WINDOW_HEIGHT = 600
-
 
 if __name__ == '__main__':
-	game_window = pyglet.window.Window(I_WIDTH, I_HEIGHT)
+	oGameWindow = pyglet.window.Window(I_WIDTH, I_HEIGHT)
 
 	#todo: 读取数据
 
@@ -106,31 +103,40 @@ if __name__ == '__main__':
 		for j in [x * 2 for x in range(4)]:
 			mTexture[i * grid_size: (i + 1) * grid_size, (j + i % 2) * grid_size: (j + i % 2 + 1) * grid_size, :] = vector([1. / 255, 128. / 255, 1, 1])
 
-	oDevice = device.CDevice(I_WINDOW_WIDTH, I_WINDOW_HEIGHT)
+	oDevice = device.CDevice(I_WIDTH, I_HEIGHT, mTexture)
 	oCameraMgr = camera.CMgr()
 	oCamera = oCameraMgr.GetCamera(camera.TYPE_NORMAL)
+
+	oCamera.SetEye(vector([-3, 0, 0, 1]))
+	oCamera.SetLookAt(vector([-2, 0, 0, 1]))
+	oCamera.SetUp(vector([0, 1, 0, 0]))
+	oCamera.SetAspect(0.5)
+	oCamera.SetFar(300.0)
+
 	oLight = light.CPointLight(1)
 	oLightMgr = light.CMgr()
 	oLightMgr.AddLight(oLight)
 	mMVP = oCamera.GetViewTrans() * oCamera.GetProjectTrans()
-	mNormalTrans = oCamera.GetNormalTrans()
+	mNormalTrans = oDevice.GetNormalTrans()
 
-	@game_window.event
+	oFrame = image.create(I_WIDTH, I_HEIGHT)
+
+	@oGameWindow.event
 	def on_draw():
 		"""
 		每帧调用
 		"""
-		print("-----ondraw")
 
-		#todo: 清理帧缓冲、Z缓冲
+		oGameWindow.clear()
 		oDevice.ClearFrameBuffer(vector([128. / 255, 33. / 255, 78. / 255, 1]))
 		oDevice.ClearZBuffer()
 
-		#todo: mvp变换
+		oDevice.DrawMesh(lVertex, lIndice)
 
-		#todo: 屏幕映射
+		mFrameBuffer = oDevice.GetFramebuffer()
 
-		#todo: 光栅化（裁剪、画线or扫描线）
+		oFrame.set_data("RGBA", I_WIDTH * 4, mFrameBuffer.tostring())
+		oFrame.blit(0, 0)
 
 	pyglet.clock.schedule_interval(lambda dt: None, 1 / 60.0)
 	pyglet.app.run()
