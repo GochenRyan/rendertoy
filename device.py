@@ -35,15 +35,8 @@ class CDevice(object):
 		"""
 		oCameraMgr = camera.CMgr()
 		oCamera = oCameraMgr.GetCamera(camera.TYPE_NORMAL)
-		print("------m", self.m_mModelTrans)
-		print("------v", oCamera.GetViewTrans())
-		print("------p", oCamera.GetProjectTrans())
 		mMV = np.dot(oCamera.GetViewTrans(), self.m_mModelTrans)
 		mMVP = np.dot(oCamera.GetProjectTrans(), mMV)
-
-		# print("------m", self.m_mModelTrans)
-		# print("------v", oCamera.GetViewTrans())
-		# print("------p", oCamera.GetProjectTrans())
 
 		mNormalTrans = self.GetNormalTrans()
 
@@ -60,8 +53,6 @@ class CDevice(object):
 		oPoint2.m_vPos = np.dot(mMVP, oPoint2.m_vPos)
 		oPoint3.m_vPos = np.dot(mMVP, oPoint3.m_vPos)
 
-		print("-------after mvp", oPoint1, oPoint2, oPoint3)
-
 		if self.isBackface(oPoint1.m_vPos, oPoint2.m_vPos, oPoint3.m_vPos):
 			return
 
@@ -70,13 +61,10 @@ class CDevice(object):
 		oPoint2.m_vNorm[:3] = np.dot(mNormalTrans, oPoint2.m_vNorm[:3])
 		oPoint3.m_vNorm[:3] = np.dot(mNormalTrans, oPoint3.m_vNorm[:3])
 
-
 		# 归一化
 		self.homogenize(oPoint1)
 		self.homogenize(oPoint2)
 		self.homogenize(oPoint3)
-
-		print("-------after homogenize", oPoint1, oPoint2, oPoint3)
 
 		# rhw
 		self.initRhw(oPoint1)
@@ -88,12 +76,8 @@ class CDevice(object):
 		self.screenMapping(oPoint2.m_vPos)
 		self.screenMapping(oPoint3.m_vPos)
 
-		print("-------after screenMapping", oPoint1, oPoint2, oPoint3)
-
 		# 梯形划分(当作梯形划分为上下两个三角形)
 		tTrapezoids = self.trapezoidTriangle(oPoint1, oPoint2, oPoint3)
-
-		print("------tTrapezoids", tTrapezoids)
 
 		for tTrap in tTrapezoids:
 			self.drawScanline(tTrap)
@@ -248,7 +232,6 @@ class CDevice(object):
 
 			# rhw越大的点覆盖越小的点
 
-			print("------mLineZBuffer, vRhw", mLineZBuffer.shape, vRhw.shape)
 
 			vMask = mLineZBuffer <= vRhw
 			mLineFrameBuffer[vMask] = mLineTex[vMask]
@@ -262,10 +245,7 @@ class CDevice(object):
 		iH, iW, iC = mFrameBuffer.shape
 
 		# 映射
-		vX = (np.linspace(oStart.m_vTexCoord[0], oEnd.m_vTexCoord[0], iSampleNum) * iW + 0.5).astype(int)
-		vY = (np.linspace(oStart.m_vTexCoord[1], oEnd.m_vTexCoord[1], iSampleNum) * iH + 0.5).astype(int)
+		vX = (np.linspace(oStart.m_vTexCoord[0], oEnd.m_vTexCoord[0], iSampleNum) * (iW - 1) + 0.5).astype(int)
+		vY = (np.linspace(oStart.m_vTexCoord[1], oEnd.m_vTexCoord[1], iSampleNum) * (iH - 1) + 0.5).astype(int)
 
-		if iSampleNum > 1:
-			return mFrameBuffer[vX, vY]
-		else:
-			return mFrameBuffer[vX[0], vY[0]]
+		return mFrameBuffer[vY, vX]

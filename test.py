@@ -110,15 +110,47 @@ def Test4():
 	oDevice.drawPrimitive(oVertex1, oVertex2, oVertex3)
 	print("------zbuff:")
 	iCount = 0
-	for vZBuffer in oDevice.m_mZBuffer:
-		for z in vZBuffer:
-			if z > 1e-6:
-				print("------count", iCount)
-				print(vZBuffer)
-				break
-		iCount += 1
-	print("------framebuffer")
+	# for vZBuffer in oDevice.m_mZBuffer:
+	# 	for z in vZBuffer:
+	# 		if z > 1e-6:
+	# 			print("------count", iCount)
+	# 			print(vZBuffer)
+	# 			break
+	# 	iCount += 1
+	# print("------framebuffer")
 	# print(oDevice.m_mFrameBuffer)
 
 if __name__== '__main__':
-	Test4()
+	# Test4()
+	for i in range(2, 10000):
+		num = 0
+		ii = i
+		lRecord = []
+		while(num != 1):
+			while(ii != 0):
+				a = ii % 10
+				num += a ** 2
+				ii //= 10
+			ii = num
+			if num not in lRecord:
+				lRecord.append(num)
+			elif num == 1:
+				break
+			else:
+				print(lRecord)
+				break
+			num = 0
+			# print("------lRecord", lRecord)
+	# var = 1
+	# while var == 1:
+	# 	a = input()
+	# 	while (a != 1 and a != 4):
+	# 		num = list(str(a))
+	# 		a = 0
+	# 		for i in num:
+	# 			a = a + int(i) ** 2
+	# 		print(a)
+	# 	if a == 1:
+	# 		print("true")
+	# 	else:
+	# 		print("false")
