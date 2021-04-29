@@ -30,8 +30,11 @@ class CUVNCamera(object):
 		过程：1.平移  2.空间变换
 		"""
 		vN = rtmath.normalize(self.m_vEye - self.m_vAt)[:3]
+
+		# 左手系中使用右手定则判断方向，方向相反
 		vU = rtmath.normalize(-np.cross(self.m_vUp[:3], vN))
 		vV = rtmath.normalize(-np.cross(vN, vU))
+
 		mTemp = np.eye(4)
 		mTemp[0, :3] = vU
 		mTemp[1, :3] = vV

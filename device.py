@@ -30,7 +30,7 @@ class CDevice(object):
 
 	def DrawMesh(self, lVertex, lIndice):
 		for tIndices in lIndice:
-			self.drawPrimitive(lVertex[tIndices[0]], lVertex[tIndices[1]], lVertex[tIndices[0]])
+			self.drawPrimitive(lVertex[tIndices[0]], lVertex[tIndices[1]], lVertex[tIndices[2]])
 
 	def drawPrimitive(self, oVertex1, oVertex2, oVertex3):
 		"""
@@ -47,11 +47,11 @@ class CDevice(object):
 		oPoint2 = oVertex2.copy()
 		oPoint3 = oVertex3.copy()
 
-		# MVP变换
 		oPoint1.m_vWorldPos = oPoint1.m_vPos.copy()
 		oPoint2.m_vWorldPos = oPoint2.m_vPos.copy()
 		oPoint3.m_vWorldPos = oPoint3.m_vPos.copy()
 
+		# MVP变换
 		oPoint1.m_vPos = np.dot(mMVP, oPoint1.m_vPos)
 		oPoint2.m_vPos = np.dot(mMVP, oPoint2.m_vPos)
 		oPoint3.m_vPos = np.dot(mMVP, oPoint3.m_vPos)
@@ -118,8 +118,6 @@ class CDevice(object):
 			return []
 		if oVertex1.m_vPos[1] == oVertex2.m_vPos[1] == oVertex3.m_vPos[1]:
 			return []
-
-		print("------1111")
 
 		# y值从高到低
 		if oVertex1.m_vPos[1] < oVertex2.m_vPos[1]:
@@ -230,15 +228,13 @@ class CDevice(object):
 					vIncidentDir = rtmath.normalize(vFragWorldPos - vLightPos)
 					vReflectDir = rtmath.reflect(vIncidentDir, vNorm)
 					vSpec = 0.5 * pow(max(np.dot(vViewDir, vReflectDir), 0.), 32) * vLightColor
-					print("------drawScanline", vAmbient, vDiffuse, vSpec, mLineTex[i])
 					vFragColor = (vAmbient + vDiffuse + vSpec) * mLineTex[i]
-
+					# vFragColor = vector([0, 0, 1, 1])
 					mLineTex[i] = ((vFragColor * 255) + 0.5).astype(int)
 
 			# rhw越大的点覆盖越小的点
 			vMask = mLineZBuffer <= vRhw
 			mLineFrameBuffer[vMask] = mLineTex[vMask]
-			print("------mLineFrameBuffer", mLineFrameBuffer)
 			mLineZBuffer[vMask] = vRhw[vMask]
 
 

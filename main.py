@@ -95,6 +95,16 @@ if __name__ == '__main__':
 		[33, 34, 35],
 	]
 
+	# lVertex = [
+	# 	CVertex(vector([0, 2, 0, 1]), vector([1, 0, 0, 0]), vector([0, 0])),
+	# 	CVertex(vector([0, 0, 2, 1]), vector([1, 0, 0, 0]), vector([1, 0])),
+	# 	CVertex(vector([0, -2, 0, 1]), vector([1, 0, 0, 0]), vector([0, 1])),
+	# ]
+	#
+	# lIndice = [
+	# 	[0, 1, 2],
+	# ]
+
 	# 纹理（棋盘格）
 	mTexture = np.ones((256, 256, 4), dtype="uint8")
 	grid_size = 32
@@ -110,14 +120,12 @@ if __name__ == '__main__':
 	oCamera.SetEye(vector([-3, 0, 0, 1]))
 	oCamera.SetLookAt(vector([-2, 0, 0, 1]))
 	oCamera.SetUp(vector([0, 1, 0, 0]))
-	oCamera.SetAspect(0.5)
+	oCamera.SetAspect(1.0)
 	oCamera.SetFar(300.0)
 
 	oLight = light.CPointLight(1)
 	oLightMgr = light.CMgr()
 	oLightMgr.AddLight(oLight)
-	mMVP = oCamera.GetViewTrans() * oCamera.GetProjectTrans()
-	mNormalTrans = oDevice.GetNormalTrans()
 
 	oFrame = image.create(I_WIDTH, I_HEIGHT)
 
@@ -128,7 +136,8 @@ if __name__ == '__main__':
 		"""
 
 		oGameWindow.clear()
-		oDevice.ClearFrameBuffer(vector([128. / 255, 33. / 255, 78. / 255, 1]))
+		# oDevice.ClearFrameBuffer(vector([128. / 255, 33. / 255, 78. / 255, 1]))
+		oDevice.ClearFrameBuffer(vector([1, 0, 0, 1]))
 		oDevice.ClearZBuffer()
 
 		oDevice.DrawMesh(lVertex, lIndice)
