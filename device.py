@@ -215,7 +215,7 @@ class CDevice(object):
 				vLightColor = oPointLight.GetColor()
 				for i in range(iSampleNum):
 					# 环境
-					vAmbient = 0.1 * vLightColor
+					vAmbient = 0.4 * vLightColor
 
 					# 漫反射
 					vNorm = mLineNorm[i]

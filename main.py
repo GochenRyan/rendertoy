@@ -5,6 +5,7 @@ from geometry import *
 import device
 import camera
 import light
+import base
 
 """
 3D流水线：物体->多边形->顶点->变换->光栅化->屏幕
@@ -22,11 +23,9 @@ import light
 2. 右乘、列矩阵
 """
 
-
-if __name__ == '__main__':
+@base.DocProfile("./cpf_run.prof")
+def main():
 	oGameWindow = pyglet.window.Window(I_WIDTH, I_HEIGHT)
-
-	#todo: 读取数据
 
 	# 顶点
 	lVertex = [
@@ -149,3 +148,7 @@ if __name__ == '__main__':
 
 	pyglet.clock.schedule_interval(lambda dt: None, 1 / 60.0)
 	pyglet.app.run()
+
+
+if __name__ == '__main__':
+	main()
