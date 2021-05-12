@@ -1,7 +1,6 @@
 import rtmath
 import light
 import camera
-import numpy as np
 from geometry import *
 
 class CDevice(object):
@@ -215,7 +214,7 @@ class CDevice(object):
 				vLightColor = oPointLight.GetColor()
 				for i in range(iSampleNum):
 					# 环境
-					vAmbient = 0.4 * vLightColor
+					vAmbient = vector([0.7, 0.7, 0.7, 1])
 
 					# 漫反射
 					vNorm = mLineNorm[i]
@@ -229,8 +228,13 @@ class CDevice(object):
 					vReflectDir = rtmath.reflect(vIncidentDir, vNorm)
 					vSpec = 0.5 * pow(max(np.dot(vViewDir, vReflectDir), 0.), 32) * vLightColor
 					vFragColor = (vAmbient + vDiffuse + vSpec) * mLineTex[i]
-					# vFragColor = vector([0, 0, 1, 1])
 					mLineTex[i] = ((vFragColor * 255) + 0.5).astype(int)
+
+
+			# light_dir = vector([0, 0, 1, 0])
+			# diffuse = np.maximum(np.atleast_2d(np.dot(mLineNorm, -light_dir)).T, 0) * vector([0.05, 0.05, 0.05, 1])
+			# ambient = vector([0.7, 0.7, 0.7, 1])
+			# mLineTex[:, :] = np.minimum((diffuse + ambient) * mLineTex[:, :] * 255, 255)
 
 			# rhw越大的点覆盖越小的点
 			vMask = mLineZBuffer <= vRhw

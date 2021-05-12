@@ -20,7 +20,8 @@ class CUVNCamera(object):
 		self.m_mPerspTrans = None
 
 	def GetViewTrans(self):
-		self.calViewTrans()
+		if self.m_mViewTrans is None:
+			self.calViewTrans()
 		return self.m_mViewTrans
 
 	def calViewTrans(self):
@@ -45,7 +46,8 @@ class CUVNCamera(object):
 		self.m_mViewTrans = mTemp
 
 	def GetProjectTrans(self):
-		self.calProjectTrans()
+		if self.m_mPerspTrans is None:
+			self.calProjectTrans()
 		return self.m_mPerspTrans
 
 	def calProjectTrans(self):
@@ -77,15 +79,19 @@ class CUVNCamera(object):
 
 	def SetFov(self, fFov):
 		self.m_fFov = fFov
+		self.calProjectTrans()
 
 	def SetAspect(self, fAspect):
 		self.m_fAspect = fAspect
+		self.calProjectTrans()
 
 	def SetNear(self, fNear):
 		self.m_fNear = fNear
+		self.calProjectTrans()
 
 	def SetFar(self, fFar):
 		self.m_fFar = fFar
+		self.calProjectTrans()
 
 	def GetEye(self):
 		return self.m_vEye

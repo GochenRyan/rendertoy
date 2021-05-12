@@ -6,6 +6,7 @@ def DocProfile(filename):
 	def Wrapper(func):
 		def ProfiledFunc(*args, **kwargs):
 			profile = cProfile.Profile()
+			print("profile start")
 			profile.enable()
 			result = func(*args, **kwargs)
 			profile.disable()
@@ -13,6 +14,7 @@ def DocProfile(filename):
 			sortby = "tottime"
 			ps = pstats.Stats(profile).sort_stats(sortby)
 			ps.dump_stats(filename)
+			print("profile finish")
 			return result
 		return ProfiledFunc
 	return Wrapper
