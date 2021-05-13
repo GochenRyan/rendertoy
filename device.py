@@ -33,7 +33,7 @@ class CDevice(object):
 
 	def drawPrimitive(self, oVertex1, oVertex2, oVertex3):
 		"""
-		绘制图元：，法线变换，背面剔除，光栅化
+		绘制图元：MVP变换，法线变换，背面剔除，光栅化
 		"""
 		oCameraMgr = camera.CMgr()
 		oCamera = oCameraMgr.GetCamera(camera.TYPE_NORMAL)
@@ -204,37 +204,37 @@ class CDevice(object):
 
 			oLightMgr = light.CMgr()
 			lPointLight = oLightMgr.GetLights(light.TYPE_POINT_LIGHT)
-			oCameraMgr = camera.CMgr()
-			oCamera = oCameraMgr.GetCamera(camera.TYPE_NORMAL)
-			vCameraPos =oCamera.GetEye()
+			# oCameraMgr = camera.CMgr()
+			# oCamera = oCameraMgr.GetCamera(camera.TYPE_NORMAL)
+			# vCameraPos =oCamera.GetEye()
+			#
+			# # 冯氏光照模型，Phong着色
+			# for oPointLight in lPointLight:
+			# 	vLightPos = oPointLight.GetPos()
+			# 	vLightColor = oPointLight.GetColor()
+			# 	for i in range(iSampleNum):
+			# 		# 环境
+			# 		vAmbient = vector([0.7, 0.7, 0.7, 1])
+			#
+			# 		# 漫反射
+			# 		vNorm = mLineNorm[i]
+			# 		vLightDir = rtmath.normalize(vLightPos - mLineWorldPos[i])
+			# 		vDiffuse = max(np.dot(vNorm, vLightDir), 0) * vLightColor
+			#
+			# 		# 镜面反射
+			# 		vFragWorldPos = mLineWorldPos[i]
+			# 		vViewDir = rtmath.normalize(vCameraPos - vFragWorldPos)
+			# 		vIncidentDir = rtmath.normalize(vFragWorldPos - vLightPos)
+			# 		vReflectDir = rtmath.reflect(vIncidentDir, vNorm)
+			# 		vSpec = 0.5 * pow(max(np.dot(vViewDir, vReflectDir), 0.), 32) * vLightColor
+			# 		vFragColor = (vAmbient + vDiffuse + vSpec) * mLineTex[i]
+			# 		mLineTex[i] = ((vFragColor * 255) + 0.5).astype(int)
 
-			# 冯氏光照模型，Phong着色
-			for oPointLight in lPointLight:
-				vLightPos = oPointLight.GetPos()
-				vLightColor = oPointLight.GetColor()
-				for i in range(iSampleNum):
-					# 环境
-					vAmbient = vector([0.7, 0.7, 0.7, 1])
 
-					# 漫反射
-					vNorm = mLineNorm[i]
-					vLightDir = rtmath.normalize(vLightPos - mLineWorldPos[i])
-					vDiffuse = max(np.dot(vNorm, vLightDir), 0) * vLightColor
-
-					# 镜面反射
-					vFragWorldPos = mLineWorldPos[i]
-					vViewDir = rtmath.normalize(vCameraPos - vFragWorldPos)
-					vIncidentDir = rtmath.normalize(vFragWorldPos - vLightPos)
-					vReflectDir = rtmath.reflect(vIncidentDir, vNorm)
-					vSpec = 0.5 * pow(max(np.dot(vViewDir, vReflectDir), 0.), 32) * vLightColor
-					vFragColor = (vAmbient + vDiffuse + vSpec) * mLineTex[i]
-					mLineTex[i] = ((vFragColor * 255) + 0.5).astype(int)
-
-
-			# light_dir = vector([0, 0, 1, 0])
-			# diffuse = np.maximum(np.atleast_2d(np.dot(mLineNorm, -light_dir)).T, 0) * vector([0.05, 0.05, 0.05, 1])
-			# ambient = vector([0.7, 0.7, 0.7, 1])
-			# mLineTex[:, :] = np.minimum((diffuse + ambient) * mLineTex[:, :] * 255, 255)
+			light_dir = vector([0, 0, 1, 0])
+			diffuse = np.maximum(np.atleast_2d(np.dot(mLineNorm, -light_dir)).T, 0) * vector([0.05, 0.05, 0.05, 1])
+			ambient = vector([0.7, 0.7, 0.7, 1])
+			mLineTex[:, :] = np.minimum((diffuse + ambient) * mLineTex[:, :] * 255, 255)
 
 			# rhw越大的点覆盖越小的点
 			vMask = mLineZBuffer <= vRhw

@@ -9,14 +9,14 @@ import base
 
 """
 3D流水线：物体->多边形->顶点->变换->光栅化->屏幕
-1. 执行局部坐标到世界坐标变换
-2. 物体消除
-3. 执行背面消除
-4. 执行世界坐标到相机坐标变换
-5. 执行3D裁剪
-6. 执行相机坐标到透视坐标变换，即投影
-7. 执行透视坐标到视口（屏幕）坐标变换
-8. 光栅化多边形
+1. MVP变换
+2. 背面剔除
+3. 屏幕映射
+4. 光栅化
+	a. 剔除屏幕外的点
+	b. 纹理映射
+	c. 光照
+	d. 深度剔除
 
 规定：
 1. 左手系，观察空间右手系(与Unity相同)
@@ -135,8 +135,8 @@ def main():
 		"""
 
 		oGameWindow.clear()
-		# oDevice.ClearFrameBuffer(vector([128. / 255, 33. / 255, 78. / 255, 1]))
-		oDevice.ClearFrameBuffer(vector([1, 0, 0, 1]))
+		oDevice.ClearFrameBuffer(vector([128., 33., 78., 1]))
+		# oDevice.ClearFrameBuffer(vector([1, 0, 0, 1]))
 		oDevice.ClearZBuffer()
 
 		oDevice.DrawMesh(lVertex, lIndice)
