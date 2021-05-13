@@ -1,3 +1,4 @@
+#!coding=utf-8
 # 用于测试每个流程是否正确
 import camera
 import numpy as np

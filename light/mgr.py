@@ -1,3 +1,4 @@
+#!coding=utf-8
 import base
 import light.lightobj as lightobj
 from .defines import *

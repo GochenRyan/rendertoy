@@ -1,3 +1,4 @@
+#!coding=utf-8
 I_WIDTH = 800
 I_HEIGHT = 600
 

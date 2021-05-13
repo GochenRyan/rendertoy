@@ -1,3 +1,4 @@
+#!coding=utf-8
 import pyglet
 from pyglet import image
 from defines import *

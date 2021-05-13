@@ -1,3 +1,4 @@
+#!coding=utf-8
 g_lSingletonCls = []
 
 def Reset():

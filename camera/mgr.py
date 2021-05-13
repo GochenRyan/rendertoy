@@ -1,3 +1,4 @@
+#!coding=utf-8
 import base
 import camera.cameraobj as cameraobj
 from .defines import *
