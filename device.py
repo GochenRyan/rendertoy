@@ -12,6 +12,9 @@ class CDevice(object):
 		self.m_mTexture = mTexture
 		self.m_mModelTrans = np.eye(4)
 
+	def SetModelTrans(self, mModelTrans):
+		self.m_mModelTrans = mModelTrans
+
 	def GetFramebuffer(self):
 		return self.m_mFrameBuffer
 
@@ -55,6 +58,7 @@ class CDevice(object):
 		oPoint2.m_vPos = np.dot(mMVP, oPoint2.m_vPos)
 		oPoint3.m_vPos = np.dot(mMVP, oPoint3.m_vPos)
 
+		# 背面剔除
 		if self.isBackface(oPoint1.m_vPos, oPoint2.m_vPos, oPoint3.m_vPos):
 			return
 
@@ -93,7 +97,7 @@ class CDevice(object):
 
 	def isBackface(self, vPos1, vPos2, vPos3):
 		"""
-		判断是否是逆时针：
+		判断是否是逆时针（逆时针顺序为正面）：
 		(x1 * y2 - x2 * y1) + (x2 * y3 - x3 * y2) + (x3 * y1 - x1 * y3) >=  0
 		"""
 		mPos = np.vstack((vPos1, vPos2, vPos3, vPos1))
@@ -199,7 +203,7 @@ class CDevice(object):
 
 			# 纹理映射
 			mLineTex = self.textureLine(self.m_mTexture, oRealStart, oRealEnd, iSampleNum)
-			mLineWorldPos = np.linspace(oRealStart.m_vWorldPos, oRealEnd.m_vWorldPos, iSampleNum)
+			# mLineWorldPos = np.linspace(oRealStart.m_vWorldPos, oRealEnd.m_vWorldPos, iSampleNum)
 			mLineNorm = np.linspace(oRealStart.m_vNorm, oRealEnd.m_vNorm, iSampleNum)
 
 			oLightMgr = light.CMgr()

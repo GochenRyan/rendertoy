@@ -5,6 +5,7 @@ from geometry import *
 import device
 import camera
 import light
+import rtmath
 import base
 
 """
@@ -23,55 +24,59 @@ import base
 2. 右乘、列矩阵
 """
 
-@base.DocProfile("./cpf_run.prof")
+g_fDegree = 0
+
+# @base.DocProfile("./cpf_run.prof")
+lVertex = [
+	# 上
+	CVertex(vector([1, 1, 1, 1]), vector([0, 1, 0, 0]), vector([0, 0])),
+	CVertex(vector([-1, 1, 1, 1]), vector([0, 1, 0, 0]), vector([1, 0])),
+	CVertex(vector([1, 1, -1, 1]), vector([0, 1, 0, 0]), vector([0, 1])),
+	CVertex(vector([1, 1, -1, 1]), vector([0, 1, 0, 0]), vector([0, 1])),
+	CVertex(vector([-1, 1, 1, 1]), vector([0, 1, 0, 0]), vector([1, 0])),
+	CVertex(vector([-1, 1, -1, 1]), vector([0, 1, 0, 0]), vector([1, 1])),
+	# 下
+	CVertex(vector([1, -1, 1, 1]), vector([0, -1, 0, 0]), vector([1, 0])),
+	CVertex(vector([1, -1, -1, 1]), vector([0, -1, 0, 0]), vector([1, 1])),
+	CVertex(vector([-1, -1, 1, 1]), vector([0, -1, 0, 0]), vector([0, 0])),
+	CVertex(vector([-1, -1, 1, 1]), vector([0, -1, 0, 0]), vector([0, 0])),
+	CVertex(vector([1, -1, -1, 1]), vector([0, -1, 0, 0]), vector([1, 1])),
+	CVertex(vector([-1, -1, -1, 1]), vector([0, -1, 0, 0]), vector([0, 1])),
+	# 前
+	CVertex(vector([-1, 1, 1, 1]), vector([-1, 0, 0, 0]), vector([0, 1])),
+	CVertex(vector([-1, -1, 1, 1]), vector([-1, 0, 0, 0]), vector([0, 0])),
+	CVertex(vector([-1, -1, -1, 1]), vector([-1, 0, 0, 0]), vector([1, 0])),
+	CVertex(vector([-1, 1, 1, 1]), vector([-1, 0, 0, 0]), vector([0, 1])),
+	CVertex(vector([-1, -1, -1, 1]), vector([-1, 0, 0, 0]), vector([1, 0])),
+	CVertex(vector([-1, 1, -1, 1]), vector([-1, 0, 0, 0]), vector([1, 1])),
+	# 后
+	CVertex(vector([1, 1, 1, 1]), vector([1, 0, 0, 0]), vector([1, 1])),
+	CVertex(vector([1, -1, -1, 1]), vector([1, 0, 0, 0]), vector([0, 0])),
+	CVertex(vector([1, -1, 1, 1]), vector([1, 0, 0, 0]), vector([1, 0])),
+	CVertex(vector([1, 1, 1, 1]), vector([1, 0, 0, 0]), vector([1, 1])),
+	CVertex(vector([1, 1, -1, 1]), vector([1, 0, 0, 0]), vector([0, 1])),
+	CVertex(vector([1, -1, -1, 1]), vector([1, 0, 0, 0]), vector([0, 0])),
+
+	# 左
+	CVertex(vector([1, 1, 1, 1]), vector([0, 0, 1, 0]), vector([0, 1])),
+	CVertex(vector([1, -1, 1, 1]), vector([0, 0, 1, 0]), vector([0, 0])),
+	CVertex(vector([-1, -1, 1, 1]), vector([0, 0, 1, 0]), vector([1, 1])),
+	CVertex(vector([1, 1, 1, 1]), vector([0, 0, 1, 0]), vector([0, 1])),
+	CVertex(vector([-1, -1, 1, 1]), vector([0, 0, 1, 0]), vector([1, 1])),
+	CVertex(vector([-1, 1, 1, 1]), vector([0, 0, 1, 0]), vector([1, 0])),
+
+	# 右
+	CVertex(vector([1, -1, -1, 1]), vector([0, 0, -1, 0]), vector([1, 0])),
+	CVertex(vector([1, 1, -1, 1]), vector([0, 0, -1, 0]), vector([1, 1])),
+	CVertex(vector([-1, 1, -1, 1]), vector([0, 0, -1, 0]), vector([0, 1])),
+	CVertex(vector([1, -1, -1, 1]), vector([0, 0, -1, 0]), vector([1, 0])),
+	CVertex(vector([-1, 1, -1, 1]), vector([0, 0, -1, 0]), vector([0, 1])),
+	CVertex(vector([-1, -1, -1, 1]), vector([0, 0, -1, 0]), vector([0, 0])),
+]
 def main():
 	oGameWindow = pyglet.window.Window(I_WIDTH, I_HEIGHT)
 
 	# 顶点
-	lVertex = [
-		# 上
-		CVertex(vector([1, 1, 1, 1]), vector([0, 1, 0, 0]), vector([0, 0])),
-		CVertex(vector([-1, 1, 1, 1]), vector([0, 1, 0, 0]), vector([1, 0])),
-		CVertex(vector([1, 1, -1, 1]), vector([0, 1, 0, 0]), vector([0, 1])),
-		CVertex(vector([1, 1, -1, 1]), vector([0, 1, 0, 0]), vector([0, 1])),
-		CVertex(vector([-1, 1, 1, 1]), vector([0, 1, 0, 0]), vector([1, 0])),
-		CVertex(vector([-1, 1, -1, 1]), vector([0, 1, 0, 0]), vector([1, 1])),
-		# 下
-		CVertex(vector([1, -1, -1, 1]), vector([0, -1, 0, 0]), vector([1, 1])),
-		CVertex(vector([-1, -1, 1, 1]), vector([0, -1, 0, 0]), vector([1, 0])),
-		CVertex(vector([-1, -1, 1, 1]), vector([0, -1, 0, 0]), vector([0, 0])),
-		CVertex(vector([1, -1, 1, 1]), vector([0, -1, 0, 0]), vector([0, 0])),
-		CVertex(vector([-1, -1, -1, 1]), vector([0, -1, 0, 0]), vector([0, 1])),
-		CVertex(vector([1, -1, -1, 1]), vector([0, -1, 0, 0]), vector([1, 1])),
-		# 前
-		CVertex(vector([1, 1, 1, 1]), vector([0, 0, 1, 0]), vector([0, 1])),
-		CVertex(vector([1, -1, 1, 1]), vector([0, 0, 1, 0]), vector([0, 0])),
-		CVertex(vector([-1, 1, 1, 1]), vector([0, 0, 1, 0]), vector([1, 0])),
-		CVertex(vector([-1, 1, 1, 1]), vector([0, 0, 1, 0]), vector([0, 1])),
-		CVertex(vector([1, -1, 1, 1]), vector([0, 0, 1, 0]), vector([1, 0])),
-		CVertex(vector([-1, -1, 1, 1]), vector([0, 0, 1, 0]), vector([1, 1])),
-		# 后
-		CVertex(vector([-1, 1, -1, 1]), vector([0, 0, -1, 0]), vector([0, 1])),
-		CVertex(vector([-1, -1, -1, 1]), vector([0, 0, -1, 0]), vector([0, 0])),
-		CVertex(vector([1, -1, -1, 1]), vector([0, 0, -1, 0]), vector([1, 0])),
-		CVertex(vector([-1, 1, -1, 1]), vector([0, 0, -1, 0]), vector([0, 1])),
-		CVertex(vector([1, -1, -1, 1]), vector([0, 0, -1, 0]), vector([1, 0])),
-		CVertex(vector([1, 1, -1, 1]), vector([0, 0, -1, 0]), vector([1, 1])),
-		# 左
-		CVertex(vector([1, 1, 1, 1]), vector([1, 0, 0, 0]), vector([1, 1])),
-		CVertex(vector([1, 1, -1, 1]), vector([1, 0, 0, 0]), vector([0, 1])),
-		CVertex(vector([1, -1, -1, 1]), vector([1, 0, 0, 0]), vector([0, 0])),
-		CVertex(vector([1, 1, 1, 1]), vector([1, 0, 0, 0]), vector([1, 1])),
-		CVertex(vector([1, -1, -1, 1]), vector([1, 0, 0, 0]), vector([0, 0])),
-		CVertex(vector([1, -1, 1, 1]), vector([1, 0, 0, 0]), vector([1, 0])),
-		# 右
-		CVertex(vector([-1, 1, -1, 1]), vector([-1, 0, 0, 0]), vector([1, 1])),
-		CVertex(vector([-1, 1, 1, 1]), vector([-1, 0, 0, 0]), vector([0, 1])),
-		CVertex(vector([-1, -1, 1, 1]), vector([-1, 0, 0, 0]), vector([0, 0])),
-		CVertex(vector([-1, 1, -1, 1]), vector([-1, 0, 0, 0]), vector([1, 1])),
-		CVertex(vector([-1, -1, 1, 1]), vector([-1, 0, 0, 0]), vector([0, 0])),
-		CVertex(vector([-1, -1, -1, 1]), vector([-1, 0, 0, 0]), vector([1, 0])),
-	]
 
 	# 索引
 	lIndice = [
@@ -116,7 +121,7 @@ def main():
 	oCameraMgr = camera.CMgr()
 	oCamera = oCameraMgr.GetCamera(camera.TYPE_NORMAL)
 
-	oCamera.SetEye(vector([-3, 0, 0, 1]))
+	oCamera.SetEye(vector([-4, 0, 0, 1]))
 	oCamera.SetLookAt(vector([-2, 0, 0, 1]))
 	oCamera.SetUp(vector([0, 1, 0, 0]))
 	oCamera.SetAspect(1.0)
@@ -136,8 +141,13 @@ def main():
 
 		oGameWindow.clear()
 		oDevice.ClearFrameBuffer(vector([128., 33., 78., 1]))
-		# oDevice.ClearFrameBuffer(vector([1, 0, 0, 1]))
 		oDevice.ClearZBuffer()
+
+		global g_fDegree
+		mModelTrans = rtmath.getRotateMatrix(vector([1, 1, 1, 0]), g_fDegree / np.pi * 180)
+		oDevice.SetModelTrans(mModelTrans)
+		g_fDegree += 0.0005
+		g_fDegree %= 180
 
 		oDevice.DrawMesh(lVertex, lIndice)
 
