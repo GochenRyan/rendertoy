@@ -90,6 +90,7 @@ class CDevice(object):
 
 	def initRhw(self, oVertex):
 		oVertex.m_fRhw = 1. / oVertex.m_vPos[3]
+		oVertex.m_vTexCoord *= oVertex.m_fRhw
 
 	def screenMapping(self, vPos):
 		vPos[0] *= self.m_iWidth
@@ -202,7 +203,7 @@ class CDevice(object):
 			vRhw = np.linspace(oStartVertex.m_fRhw, oEndVertex.m_fRhw, iSampleNum)
 
 			# 纹理映射
-			mLineTex = self.textureLine(self.m_mTexture, oRealStart, oRealEnd, iSampleNum)
+			mLineTex = self.textureLine(self.m_mTexture, oRealStart, oRealEnd, iSampleNum, vRhw)
 			# mLineWorldPos = np.linspace(oRealStart.m_vWorldPos, oRealEnd.m_vWorldPos, iSampleNum)
 			mLineNorm = np.linspace(oRealStart.m_vNorm, oRealEnd.m_vNorm, iSampleNum)
 
@@ -246,14 +247,20 @@ class CDevice(object):
 			mLineZBuffer[vMask] = vRhw[vMask]
 
 
-	def textureLine(self, mFrameBuffer, oStart, oEnd, iSampleNum):
+	def textureLine(self, mFrameBuffer, oStart, oEnd, iSampleNum, vRhw):
 		"""
 		读取texcoord对应的纹理
 		"""
 		iH, iW, iC = mFrameBuffer.shape
+		iH -= 1
+		iW -= 1
+
+		tStartTex = oStart.m_vTexCoord[0] * iW, oStart.m_vTexCoord[1] * iH
+		tEndTex = oEnd.m_vTexCoord[0] * iW, oEnd.m_vTexCoord[1] * iH
 
 		# 映射
-		vX = (np.linspace(oStart.m_vTexCoord[0], oEnd.m_vTexCoord[0], iSampleNum) * (iW - 1) + 0.5).astype(int)
-		vY = (np.linspace(oStart.m_vTexCoord[1], oEnd.m_vTexCoord[1], iSampleNum) * (iH - 1) + 0.5).astype(int)
+		# see https://en.wikipedia.org/wiki/Texture_mapping#Perspective_correctness
+		vX = (np.linspace(tStartTex[0], tEndTex[0], iSampleNum) / vRhw + 0.5).astype(int)
+		vY = (np.linspace(tStartTex[1], tEndTex[1], iSampleNum) / vRhw + 0.5).astype(int)
 
 		return mFrameBuffer[vY, vX]
